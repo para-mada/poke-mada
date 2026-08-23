@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <content>
+        <VBox alignment="CENTER" spacing="22" styleClass="placeholder-page">
+            <padding><Insets bottom="48" left="48" right="48" top="48"/></padding>
+            <VBox maxWidth="820" spacing="0" styleClass="legacy-white-card">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header blue-header">
+                    <Label text="PREPARAR COMBATE SHOWDOWN" styleClass="legacy-card-title"/>
+                </HBox>
+                <VBox spacing="24" styleClass="legacy-card-body">
+                    <Label text="Selecciona los dos entrenadores que deseas comparar" styleClass="legacy-dark-heading"/>
+                    <HBox spacing="22">
+                        <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <Label text="TU ENTRENADOR" styleClass="legacy-field-label"/>
+                            <ComboBox disable="true" promptText="Seleccionar entrenador" maxWidth="Infinity"/>
+                        </VBox>
+                        <Label text="VS" styleClass="placeholder-versus"/>
+                        <VBox spacing="8" HBox.hgrow="ALWAYS">
+                            <Label text="ENTRENADOR RIVAL" styleClass="legacy-field-label"/>
+                            <ComboBox disable="true" promptText="Seleccionar rival" maxWidth="Infinity"/>
+                        </VBox>
+                    </HBox>
+                    <Region prefHeight="8"/>
+                    <Button disable="true" maxWidth="Infinity" text="BUSCAR COMBATE" styleClass="legacy-primary-button"/>
+                    <Label text="La selección de equipos y las tablas de velocidad y cobertura se conectarán al servicio de Showdown." wrapText="true" styleClass="legacy-placeholder-note"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

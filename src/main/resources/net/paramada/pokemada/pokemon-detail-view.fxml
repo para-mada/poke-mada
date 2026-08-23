@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" managed="false" visible="false" focusTraversable="true"
+           onMouseClicked="#closeFromBackdrop" onKeyPressed="#handleKeyPressed"
+           styleClass="pokemon-modal-overlay"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="net.paramada.pokemada.PokemonDetailController">
+    <VBox maxHeight="690" maxWidth="850" onMouseClicked="#consumeCardClick" styleClass="pokemon-modal-card">
+        <HBox alignment="CENTER_LEFT" styleClass="pokemon-modal-header">
+            <Label text="Información" styleClass="pokemon-modal-title" HBox.hgrow="ALWAYS"/>
+            <Button text="×" onAction="#close" styleClass="pokemon-modal-close"/>
+        </HBox>
+        <VBox spacing="18" styleClass="pokemon-modal-content">
+            <HBox alignment="TOP_LEFT" spacing="22">
+                <VBox alignment="CENTER" prefWidth="240" spacing="8" styleClass="pokemon-modal-identity">
+                    <ImageView fx:id="sprite" fitHeight="150" fitWidth="180" preserveRatio="true" smooth="false"/>
+                    <HBox alignment="CENTER" spacing="6">
+                        <ImageView fx:id="typeOne" fitHeight="38" fitWidth="38" preserveRatio="true"/>
+                        <ImageView fx:id="typeTwo" fitHeight="38" fitWidth="38" preserveRatio="true"/>
+                    </HBox>
+                    <Label fx:id="name" styleClass="pokemon-modal-name"/>
+                    <Label fx:id="meta" styleClass="pokemon-modal-meta"/>
+                    <Label fx:id="nature" styleClass="pokemon-modal-data"/>
+                    <Label fx:id="ability" wrapText="true" styleClass="pokemon-modal-data"/>
+                    <Label fx:id="item" wrapText="true" styleClass="pokemon-modal-data"/>
+                </VBox>
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label text="STATS · BASE VS. REALES" styleClass="pokemon-modal-section"/>
+                    <HBox spacing="15">
+                        <Label text="BASE" styleClass="stat-legend-base"/>
+                        <Label text="REAL" styleClass="stat-legend-real"/>
+                    </HBox>
+                    <VBox fx:id="stats" spacing="7"/>
+                    <Label text="EFECTIVIDAD DEFENSIVA" styleClass="pokemon-modal-section"/>
+                    <FlowPane fx:id="matchups" hgap="9" vgap="9" prefWrapLength="520"/>
+                </VBox>
+            </HBox>
+            <Region minHeight="1" styleClass="pokemon-modal-separator"/>
+            <Label text="MOVIMIENTOS" styleClass="pokemon-modal-section"/>
+            <FlowPane fx:id="moves" hgap="12" vgap="10" prefWrapLength="790"/>
+        </VBox>
+    </VBox>
+</StackPane>

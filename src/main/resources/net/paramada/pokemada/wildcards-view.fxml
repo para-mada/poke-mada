@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <content>
+        <VBox alignment="TOP_CENTER" styleClass="placeholder-page">
+            <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
+            <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header pink-header"><Label text="COMODINES" styleClass="legacy-card-title"/></HBox>
+                <VBox spacing="20" styleClass="legacy-card-body">
+                    <HBox alignment="CENTER_LEFT" spacing="14">
+                        <TextField disable="true" promptText="Buscar" prefWidth="430"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button disable="true" text="FILTRAR CARTAS  ▾" styleClass="legacy-outline-button"/>
+                    </HBox>
+                    <FlowPane hgap="18" vgap="18" prefWrapLength="820">
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                        <StackPane styleClass="wildcard-placeholder"><Label text="CARTA"/></StackPane>
+                    </FlowPane>
+                    <Label text="El inventario, detalle, compra y uso de comodines se habilitarán al conectar la API." wrapText="true" styleClass="legacy-placeholder-note"/>
+                </VBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

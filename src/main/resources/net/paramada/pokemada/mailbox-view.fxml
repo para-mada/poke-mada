@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <content>
+        <VBox alignment="TOP_CENTER" styleClass="placeholder-page">
+            <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
+            <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header pink-header"><Label text="BUZÓN" styleClass="legacy-card-title"/></HBox>
+                <VBox spacing="12" styleClass="legacy-card-body">
+                    <HBox alignment="CENTER_LEFT" spacing="16" styleClass="mail-table-header">
+                        <Label minWidth="90" text="TIPO"/>
+                        <Label minWidth="250" text="TÍTULO"/>
+                        <Label minWidth="210" text="REMITENTE"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="FILTRO  ▾"/>
+                    </HBox>
+                    <Separator/>
+                    <VBox alignment="CENTER" minHeight="330" spacing="12">
+                        <Label text="✉" styleClass="mail-empty-icon"/>
+                        <Label text="Aún no tienes recompensas en tu buzón" styleClass="legacy-dark-heading"/>
+                        <Label text="Las recompensas aparecerán aquí cuando se conecte la cuenta del entrenador." styleClass="legacy-placeholder-note"/>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>
