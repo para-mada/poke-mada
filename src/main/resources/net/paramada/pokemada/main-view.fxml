@@ -208,10 +208,16 @@
                         </HBox>
 
                         <VBox spacing="14.0" styleClass="live-team-card">
-                            <HBox alignment="CENTER_LEFT">
+                            <HBox alignment="CENTER_LEFT" spacing="14.0">
                                 <VBox HBox.hgrow="ALWAYS">
                                     <Label text="TU EQUIPO" styleClass="live-section-kicker"/>
                                     <Label text="Pokémon Sun / Moon · 6 slots" styleClass="live-card-title"/>
+                                </VBox>
+                                <VBox alignment="CENTER_RIGHT" spacing="4.0">
+                                    <Button fx:id="pokeVialButton" onAction="#usePokeVial"
+                                            text="POKE VIAL  ·  3/3" styleClass="poke-vial-button"/>
+                                    <Label fx:id="pokeVialStatus" text="Restaura PS, estado y PP"
+                                           styleClass="poke-vial-status"/>
                                 </VBox>
                                 <Label fx:id="teamSummaryLabel" text="Leyendo equipo…" styleClass="team-summary"/>
                             </HBox>

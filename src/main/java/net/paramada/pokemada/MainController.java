@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
@@ -21,6 +22,7 @@ import net.paramada.pokemada.battlelog.BattleLogEvent;
 import net.paramada.pokemada.battlelog.BattleLogManager;
 import net.paramada.pokemada.battlelog.BattleLogSession;
 import net.paramada.pokemada.battlelog.BattleLogStore;
+import net.paramada.pokemada.features.vial.PokeVial;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;
 import net.paramada.pokemada.game.assets.PokemonBaseStats;
 import net.paramada.pokemada.game.assets.PokemonMoveDex;
@@ -32,6 +34,7 @@ import net.paramada.pokemada.game.assets.PokemonSpeciesDex;
 import net.paramada.pokemada.game.official.shared.crypto.PokemonCrypto;
 import net.paramada.pokemada.game.official.sm.SmBattleTextReader;
 import net.paramada.pokemada.game.official.sm.SmMemoryMap;
+import net.paramada.pokemada.game.official.sm.SmPartyHealer;
 import net.paramada.pokemada.protocol.citra.CitraUdpClient;
 
 import java.nio.ByteBuffer;
@@ -116,6 +119,8 @@ public final class MainController {
     @FXML private VBox combatLogEntries;
     @FXML
     private Label teamSummaryLabel;
+    @FXML private Button pokeVialButton;
+    @FXML private Label pokeVialStatus;
     @FXML private HBox partySlot0Card;
     @FXML private HBox partySlot1Card;
     @FXML private HBox partySlot2Card;
@@ -264,8 +269,10 @@ public final class MainController {
     private ImageView partySlot5Sprite;
 
     private final AtomicBoolean refreshingLiveData = new AtomicBoolean();
+    private final AtomicBoolean usingPokeVial = new AtomicBoolean();
     private final AtomicBoolean pollingBattleText = new AtomicBoolean();
     private final BattleLogManager battleLogManager = new BattleLogManager(new BattleLogStore());
+    private final PokeVial pokeVial = new PokeVial();
     private final PokemonSpriteCache spriteCache = new PokemonSpriteCache();
     private final PokemonItemSpriteCache itemSpriteCache = new PokemonItemSpriteCache();
     private final Image missingNoSprite = bundledImage("missingno.png");
@@ -365,6 +372,7 @@ public final class MainController {
         detailEnemyAbilityTooltip = installDescriptionTooltip(detailEnemyAbility);
         detailEnemyItemTooltip = installDescriptionTooltip(detailEnemyItem);
         updateBattleCardInteraction(false);
+        updatePokeVial(null, false);
         try {
             battleLogManager.loadHistory();
         } catch (IOException exception) {
@@ -434,6 +442,7 @@ public final class MainController {
 
     @FXML
     private void refreshLiveData() {
+        if (usingPokeVial.get()) return;
         if (!refreshingLiveData.compareAndSet(false, true)) {
             return;
         }
@@ -505,7 +514,11 @@ public final class MainController {
                             unsignedShort(decrypted, 0xf6), unsignedShort(decrypted, 0xfa),
                             unsignedShort(decrypted, 0xfc), unsignedShort(decrypted, 0xf8)},
                     new int[]{unsignedShort(decrypted, 0x5a), unsignedShort(decrypted, 0x5c),
-                            unsignedShort(decrypted, 0x5e), unsignedShort(decrypted, 0x60)});
+                            unsignedShort(decrypted, 0x5e), unsignedShort(decrypted, 0x60)},
+                    ByteBuffer.wrap(decrypted, 0xe8, 4).order(ByteOrder.LITTLE_ENDIAN).getInt(),
+                    new int[]{Byte.toUnsignedInt(decrypted[0x62]), Byte.toUnsignedInt(decrypted[0x63]),
+                            Byte.toUnsignedInt(decrypted[0x64]), Byte.toUnsignedInt(decrypted[0x65])},
+                    partyMaxPp(decrypted));
         }
         return result;
     }
@@ -639,6 +652,13 @@ public final class MainController {
                 && battle.player().species() != 0
                 && battle.enemy().species() != 0;
         boolean singleBattle = inBattle && active.playerTwo() == 0 && active.enemyTwo() == 0;
+        try {
+            boolean recharged = pokeVial.observe(toVialPartyState(party), inBattle);
+            updatePokeVial(recharged ? "Recargado en el Centro Pokémon" : null, inBattle);
+        } catch (IOException exception) {
+            LOGGER.log(System.Logger.Level.WARNING, "Could not persist Poke Vial recharge", exception);
+            updatePokeVial("No se pudo guardar el estado", inBattle);
+        }
         updateBattleLogState(inBattle, singleBattle, battle.battleText());
         updateBattleCardInteraction(inBattle);
         if (!inBattle && combatDetailView.isVisible()) {
@@ -656,6 +676,83 @@ public final class MainController {
                 enemyHpLabel, enemyHpBar, enemyBattleDetailsLabel, enemyActiveSprite);
         renderMoves(battle.player());
         renderCombatDetails(party, battle);
+    }
+
+    @FXML
+    private void usePokeVial() {
+        if (battleActive) {
+            updatePokeVial("No puede usarse durante un combate", true);
+            return;
+        }
+        if (!pokeVial.available()) {
+            updatePokeVial("Sin cargas; visita un Centro Pokémon", false);
+            return;
+        }
+        if (refreshingLiveData.get() || !usingPokeVial.compareAndSet(false, true)) {
+            updatePokeVial("Espera a que termine la lectura actual", false);
+            return;
+        }
+        pokeVialButton.setDisable(true);
+        pokeVialStatus.setText("Restaurando equipo…");
+        Thread.startVirtualThread(() -> {
+            String message;
+            try (CitraUdpClient client = new CitraUdpClient()) {
+                SmPartyHealer.HealResult result = new SmPartyHealer().heal(client);
+                if (result.healedSlots() == 0) {
+                    message = "Tu equipo ya está completamente restaurado";
+                } else {
+                    pokeVial.consume();
+                    message = "Equipo restaurado · " + result.healedSlots() +
+                            (result.healedSlots() == 1 ? " Pokémon" : " Pokémon");
+                }
+            } catch (Exception exception) {
+                LOGGER.log(System.Logger.Level.ERROR, "Poke Vial failed", exception);
+                message = "No se pudo restaurar el equipo";
+            } finally {
+                usingPokeVial.set(false);
+            }
+            String finalMessage = message;
+            Platform.runLater(() -> {
+                updatePokeVial(finalMessage, battleActive);
+                refreshLiveData();
+            });
+        });
+    }
+
+    private void updatePokeVial(String message, boolean inBattle) {
+        pokeVialButton.setText("POKE VIAL  ·  " + pokeVial.charges() + "/" + pokeVial.maxCharges());
+        pokeVialButton.setDisable(inBattle || !pokeVial.available() || usingPokeVial.get());
+        if (message != null) pokeVialStatus.setText(message);
+    }
+
+    private static int[] partyMaxPp(byte[] decrypted) {
+        int[] result = new int[4];
+        for (int move = 0; move < result.length; move++) {
+            int current = Byte.toUnsignedInt(decrypted[0x62 + move]);
+            int maximum = SmPartyHealer.maxPp(unsignedShort(decrypted, 0x5a + move * 2),
+                    Byte.toUnsignedInt(decrypted[0x66 + move]));
+            result[move] = maximum < 0 ? current : maximum;
+        }
+        return result;
+    }
+
+    private static PokeVial.PartyState toVialPartyState(PartySnapshot[] party) {
+        int[] species = new int[party.length];
+        int[] currentHp = new int[party.length];
+        int[] maxHp = new int[party.length];
+        int[] status = new int[party.length];
+        int[][] currentPp = new int[party.length][4];
+        int[][] maxPp = new int[party.length][4];
+        for (int slot = 0; slot < party.length; slot++) {
+            PartySnapshot pokemon = party[slot];
+            species[slot] = pokemon.species();
+            currentHp[slot] = pokemon.currentHp();
+            maxHp[slot] = pokemon.maxHp();
+            status[slot] = pokemon.status();
+            currentPp[slot] = pokemon.currentPp().clone();
+            maxPp[slot] = pokemon.maxPp().clone();
+        }
+        return new PokeVial.PartyState(species, currentHp, maxHp, status, currentPp, maxPp);
     }
 
     private void updatePartySlotInteraction(int slot, boolean occupied) {
@@ -1372,9 +1469,11 @@ public final class MainController {
     }
 
     private record PartySnapshot(int species, String nickname, int level, int currentHp, int maxHp,
-                                 int heldItem, int ability, int nature, int[] realStats, int[] moves) {
+                                 int heldItem, int ability, int nature, int[] realStats, int[] moves,
+                                 int status, int[] currentPp, int[] maxPp) {
         private static PartySnapshot empty() {
-            return new PartySnapshot(0, "", 0, 0, 0, 0, 0, 0, new int[6], new int[4]);
+            return new PartySnapshot(0, "", 0, 0, 0, 0, 0, 0, new int[6], new int[4],
+                    0, new int[4], new int[4]);
         }
     }
 

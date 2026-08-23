@@ -959,3 +959,19 @@
 .epic-rarity { -fx-background-color: rgba(145,59,236,0.20); -fx-text-fill: #c18aff; }
 .legendary-rarity { -fx-background-color: rgba(220,225,255,0.18); -fx-text-fill: #e7e9ff; }
 .master-text-button { -fx-background-color: transparent; -fx-text-fill: #aeb8df; -fx-font-size: 9px; -fx-font-weight: bold; }
+
+/* Poke Vial */
+.poke-vial-button {
+    -fx-padding: 8 15;
+    -fx-background-color: linear-gradient(to right, #283ca9, #7138e6);
+    -fx-background-radius: 18;
+    -fx-border-color: rgba(157, 172, 255, 0.42);
+    -fx-border-radius: 18;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.poke-vial-button:hover { -fx-background-color: linear-gradient(to right, #3451d2, #8651f2); }
+.poke-vial-button:disabled { -fx-opacity: 0.48; -fx-cursor: default; }
+.poke-vial-status { -fx-text-fill: #8f86a1; -fx-font-size: 8px; }

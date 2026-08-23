@@ -17,9 +17,10 @@ en desarrollo; las secciones que todavía son conceptuales se identifican claram
 
 | Área | Estado | Descripción |
 | --- | --- | --- |
-| Conexión con MadaLime/Citra | Funcional | Transporte UDP de solo lectura usando direcciones virtuales guest de Nintendo 3DS. |
+| Conexión con MadaLime/Citra | Funcional | Transporte UDP con direcciones virtuales guest de Nintendo 3DS; las lecturas son la norma y Poke Vial es la escritura explícita aislada. |
 | Pokémon Sun/Moon | Funcional | Perfil de memoria independiente para equipo, combate, textos y mochila. |
 | LIVE | Funcional | Equipo del jugador, combate activo, sprites, PS y acceso al detalle. |
+| Poke Vial | Funcional | Cura el equipo desde LIVE, consume cargas persistentes y se recarga tras una curación completa fuera de combate. |
 | Combate individual | Funcional | Combatientes, equipos, stats base, tipos, movimientos y registro en vivo. |
 | Historial de combate | Funcional | Guarda sesiones localmente y expone los tres combates anteriores. |
 | Detalle de Pokémon | Funcional | Stats base/reales, tipos, habilidad, objeto, movimientos y efectividad defensiva. |
@@ -57,6 +58,9 @@ La pantalla LIVE es el resumen operativo de la partida.
 - **Registro:** muestra exclusivamente los tres combates finalizados más recientes. Cada fila utiliza
   el primer mensaje real como resumen y abre el registro completo.
 - **Tu equipo:** seis slots actualizados desde RAM con mote, especie, nivel, PS y sprite 2D.
+- **Poke Vial:** restaura PS, estados y PP al pulsarlo. Sus cargas persisten en `%LOCALAPPDATA%`,
+  no se consumen si el equipo ya está sano y vuelven al máximo al detectar una restauración completa
+  del mismo equipo fuera de combate (la señal conservadora usada para una visita al Centro Pokémon).
 - **Detalle de Pokémon:** al seleccionar un Pokémon propio se abre un modal con:
   - sprite y tipos;
   - naturaleza, habilidad y objeto con descripción;
