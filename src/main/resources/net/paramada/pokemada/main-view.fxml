@@ -217,7 +217,7 @@
                             </HBox>
 
                             <GridPane hgap="12.0" vgap="12.0">
-                                <HBox userData="0" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot0Card" userData="0" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="pokemon-slot">
                                     <Label text="01" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot0Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS">
@@ -226,31 +226,31 @@
                                     </VBox>
                                     <Label fx:id="partySlot0Hp" text="" styleClass="slot-hp"/>
                                 </HBox>
-                                <HBox userData="1" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot1Card" userData="1" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="pokemon-slot">
                                     <Label text="02" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot1Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS"><Label fx:id="partySlot1Name" text="Vacío" styleClass="slot-name"/><Label fx:id="partySlot1Details" text="—" styleClass="slot-details"/></VBox>
                                     <Label fx:id="partySlot1Hp" text="" styleClass="slot-hp"/>
                                 </HBox>
-                                <HBox userData="2" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot2Card" userData="2" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="pokemon-slot">
                                     <Label text="03" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot2Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS"><Label fx:id="partySlot2Name" text="Vacío" styleClass="slot-name"/><Label fx:id="partySlot2Details" text="—" styleClass="slot-details"/></VBox>
                                     <Label fx:id="partySlot2Hp" text="" styleClass="slot-hp"/>
                                 </HBox>
-                                <HBox userData="3" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot3Card" userData="3" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="pokemon-slot">
                                     <Label text="04" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot3Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS"><Label fx:id="partySlot3Name" text="Vacío" styleClass="slot-name"/><Label fx:id="partySlot3Details" text="—" styleClass="slot-details"/></VBox>
                                     <Label fx:id="partySlot3Hp" text="" styleClass="slot-hp"/>
                                 </HBox>
-                                <HBox userData="4" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot4Card" userData="4" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="0" GridPane.rowIndex="2" styleClass="pokemon-slot">
                                     <Label text="05" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot4Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS"><Label fx:id="partySlot4Name" text="Vacío" styleClass="slot-name"/><Label fx:id="partySlot4Details" text="—" styleClass="slot-details"/></VBox>
                                     <Label fx:id="partySlot4Hp" text="" styleClass="slot-hp"/>
                                 </HBox>
-                                <HBox userData="5" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="pokemon-slot, clickable-card">
+                                <HBox fx:id="partySlot5Card" userData="5" onMouseClicked="#openPokemonDetails" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="pokemon-slot">
                                     <Label text="06" styleClass="slot-number"/>
                                     <ImageView fx:id="partySlot5Sprite" fitHeight="60.0" fitWidth="60.0" preserveRatio="true" smooth="false" styleClass="slot-sprite"/>
                                     <VBox HBox.hgrow="ALWAYS"><Label fx:id="partySlot5Name" text="Vacío" styleClass="slot-name"/><Label fx:id="partySlot5Details" text="—" styleClass="slot-details"/></VBox>

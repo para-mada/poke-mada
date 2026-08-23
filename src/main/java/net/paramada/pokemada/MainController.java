@@ -115,6 +115,12 @@ public final class MainController {
     @FXML private VBox combatLogEntries;
     @FXML
     private Label teamSummaryLabel;
+    @FXML private HBox partySlot0Card;
+    @FXML private HBox partySlot1Card;
+    @FXML private HBox partySlot2Card;
+    @FXML private HBox partySlot3Card;
+    @FXML private HBox partySlot4Card;
+    @FXML private HBox partySlot5Card;
     @FXML
     private Label partySlot0Name;
     @FXML
@@ -266,6 +272,7 @@ public final class MainController {
     private Label[] partyNames;
     private Label[] partyDetails;
     private Label[] partyHp;
+    private HBox[] partyCards;
     private ImageView[] partySprites;
     private final int[] partySpriteSpecies = new int[6];
     private final int[] activeSpriteSpecies = new int[2];
@@ -307,8 +314,13 @@ public final class MainController {
                 partySlot3Details, partySlot4Details, partySlot5Details};
         partyHp = new Label[]{partySlot0Hp, partySlot1Hp, partySlot2Hp,
                 partySlot3Hp, partySlot4Hp, partySlot5Hp};
+        partyCards = new HBox[]{partySlot0Card, partySlot1Card, partySlot2Card,
+                partySlot3Card, partySlot4Card, partySlot5Card};
         partySprites = new ImageView[]{partySlot0Sprite, partySlot1Sprite, partySlot2Sprite,
                 partySlot3Sprite, partySlot4Sprite, partySlot5Sprite};
+        for (int slot = 0; slot < partyCards.length; slot++) {
+            updatePartySlotInteraction(slot, false);
+        }
         playerMoveLabels = new Label[]{playerMove0Label, playerMove1Label, playerMove2Label, playerMove3Label};
         detailMoveCards = new HBox[]{detailMove0, detailMove1, detailMove2, detailMove3};
         detailMoveTooltips = installMoveTooltips(detailMoveCards);
@@ -347,7 +359,9 @@ public final class MainController {
         }
         renderBattleLogPanel();
         // Battle detection must remain independent from the currently selected screen.
-        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ignored -> refreshLiveData()));
+        // Keep battle activation and single/double classification responsive even when the emulator
+        // is running above normal speed. The guarded refresh skips ticks while a read is in flight.
+        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.millis(500), ignored -> refreshLiveData()));
         liveRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         liveRefreshTimeline.play();
         battleTextTimeline = new Timeline(new KeyFrame(Duration.millis(350), ignored -> pollBattleText()));
@@ -589,6 +603,7 @@ public final class MainController {
         int occupied = 0;
         for (int slot = 0; slot < party.length; slot++) {
             PartySnapshot pokemon = party[slot];
+            updatePartySlotInteraction(slot, pokemon.species() != 0);
             if (pokemon.species() == 0) {
                 partySpriteSpecies[slot] = 0;
                 partySprites[slot].setImage(null);
@@ -628,6 +643,22 @@ public final class MainController {
                 enemyHpLabel, enemyHpBar, enemyBattleDetailsLabel, enemyActiveSprite);
         renderMoves(battle.player());
         renderCombatDetails(party, battle);
+    }
+
+    private void updatePartySlotInteraction(int slot, boolean occupied) {
+        HBox card = partyCards[slot];
+        card.setMouseTransparent(!occupied);
+        if (occupied) {
+            if (!card.getStyleClass().contains("clickable-card")) {
+                card.getStyleClass().add("clickable-card");
+            }
+            card.getStyleClass().remove("pokemon-slot-empty");
+        } else {
+            card.getStyleClass().remove("clickable-card");
+            if (!card.getStyleClass().contains("pokemon-slot-empty")) {
+                card.getStyleClass().add("pokemon-slot-empty");
+            }
+        }
     }
 
     private void updateBattleCardInteraction(boolean inBattle) {

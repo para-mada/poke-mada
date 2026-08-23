@@ -737,6 +737,10 @@
     -fx-border-radius: 14;
 }
 
+.pokemon-slot-empty {
+    -fx-cursor: default;
+}
+
 .slot-number {
     -fx-min-width: 35;
     -fx-min-height: 35;
