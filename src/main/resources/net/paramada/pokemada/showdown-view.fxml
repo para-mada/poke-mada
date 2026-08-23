@@ -13,7 +13,7 @@
         <VBox alignment="CENTER" spacing="22" styleClass="placeholder-page">
             <padding><Insets bottom="48" left="48" right="48" top="48"/></padding>
             <VBox maxWidth="820" spacing="0" styleClass="legacy-white-card">
-                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header blue-header">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, blue-header">
                     <Label text="PREPARAR COMBATE SHOWDOWN" styleClass="legacy-card-title"/>
                 </HBox>
                 <VBox spacing="24" styleClass="legacy-card-body">

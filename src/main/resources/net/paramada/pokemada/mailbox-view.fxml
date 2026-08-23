@@ -12,7 +12,7 @@
         <VBox alignment="TOP_CENTER" styleClass="placeholder-page">
             <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
             <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
-                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header pink-header"><Label text="BUZÓN" styleClass="legacy-card-title"/></HBox>
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, pink-header"><Label text="BUZÓN" styleClass="legacy-card-title"/></HBox>
                 <VBox spacing="12" styleClass="legacy-card-body">
                     <HBox alignment="CENTER_LEFT" spacing="16" styleClass="mail-table-header">
                         <Label minWidth="90" text="TIPO"/>

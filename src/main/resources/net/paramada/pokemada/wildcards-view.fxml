@@ -15,7 +15,7 @@
         <VBox alignment="TOP_CENTER" styleClass="placeholder-page">
             <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
             <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
-                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header pink-header"><Label text="COMODINES" styleClass="legacy-card-title"/></HBox>
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, pink-header"><Label text="COMODINES" styleClass="legacy-card-title"/></HBox>
                 <VBox spacing="20" styleClass="legacy-card-body">
                     <HBox alignment="CENTER_LEFT" spacing="14">
                         <TextField disable="true" promptText="Buscar" prefWidth="430"/>
