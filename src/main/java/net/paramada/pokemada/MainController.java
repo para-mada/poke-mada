@@ -446,6 +446,11 @@ public final class MainController {
         if (!refreshingLiveData.compareAndSet(false, true)) {
             return;
         }
+        // The vial may have reserved RAM access between the first check and this CAS.
+        if (usingPokeVial.get()) {
+            refreshingLiveData.set(false);
+            return;
+        }
         if (!emulatorConnectionRow.getStyleClass().contains("connected")) {
             setConnectionState("Sincronizando…", null);
         }
@@ -688,26 +693,29 @@ public final class MainController {
             updatePokeVial("Sin cargas; visita un Centro Pokémon", false);
             return;
         }
-        if (refreshingLiveData.get() || !usingPokeVial.compareAndSet(false, true)) {
-            updatePokeVial("Espera a que termine la lectura actual", false);
+        if (!usingPokeVial.compareAndSet(false, true)) {
+            updatePokeVial("El Poke Vial ya está en uso", false);
             return;
         }
         pokeVialButton.setDisable(true);
         pokeVialStatus.setText("Restaurando equipo…");
         Thread.startVirtualThread(() -> {
             String message;
-            try (CitraUdpClient client = new CitraUdpClient()) {
-                SmPartyHealer.HealResult result = new SmPartyHealer().heal(client);
-                if (result.healedSlots() == 0) {
-                    message = "Tu equipo ya está completamente restaurado";
-                } else {
-                    pokeVial.consume();
-                    message = "Equipo restaurado · " + result.healedSlots() +
-                            (result.healedSlots() == 1 ? " Pokémon" : " Pokémon");
+            try {
+                waitForLiveRefresh();
+                try (CitraUdpClient client = new CitraUdpClient()) {
+                    SmPartyHealer.HealResult result = new SmPartyHealer().heal(client);
+                    if (result.healedSlots() == 0) {
+                        message = "Tu equipo ya está completamente restaurado";
+                    } else {
+                        pokeVial.consume();
+                        message = "Equipo restaurado · " + result.healedSlots() +
+                                (result.healedSlots() == 1 ? " Pokémon" : " Pokémon");
+                    }
                 }
             } catch (Exception exception) {
                 LOGGER.log(System.Logger.Level.ERROR, "Poke Vial failed", exception);
-                message = "No se pudo restaurar el equipo";
+                message = "No se pudo restaurar · " + conciseError(exception);
             } finally {
                 usingPokeVial.set(false);
             }
@@ -717,6 +725,22 @@ public final class MainController {
                 refreshLiveData();
             });
         });
+    }
+
+    private void waitForLiveRefresh() throws InterruptedException, IOException {
+        long deadline = System.nanoTime() + java.time.Duration.ofSeconds(5).toNanos();
+        while (refreshingLiveData.get()) {
+            if (System.nanoTime() >= deadline) {
+                throw new IOException("la lectura de RAM no terminó");
+            }
+            Thread.sleep(25);
+        }
+    }
+
+    private static String conciseError(Exception exception) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) return exception.getClass().getSimpleName();
+        return message.length() <= 72 ? message : message.substring(0, 69) + "…";
     }
 
     private void updatePokeVial(String message, boolean inBattle) {
