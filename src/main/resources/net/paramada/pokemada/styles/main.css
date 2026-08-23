@@ -428,6 +428,9 @@
     -fx-min-width: 76;
     -fx-min-height: 68;
 }
+.team-pokemon-preview-empty {
+    -fx-cursor: default;
+}
 .team-item-badge {
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(30, 18, 36, 0.55), 4, 0.25, 0, 1);

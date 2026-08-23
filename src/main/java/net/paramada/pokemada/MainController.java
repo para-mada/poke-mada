@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import net.paramada.pokemada.battlelog.BattleLogEvent;
@@ -171,6 +172,12 @@ public final class MainController {
     @FXML private ImageView detailPlayerTeam3;
     @FXML private ImageView detailPlayerTeam4;
     @FXML private ImageView detailPlayerTeam5;
+    @FXML private StackPane detailPlayerTeamCard0;
+    @FXML private StackPane detailPlayerTeamCard1;
+    @FXML private StackPane detailPlayerTeamCard2;
+    @FXML private StackPane detailPlayerTeamCard3;
+    @FXML private StackPane detailPlayerTeamCard4;
+    @FXML private StackPane detailPlayerTeamCard5;
     @FXML private ImageView detailPlayerItem0;
     @FXML private ImageView detailPlayerItem1;
     @FXML private ImageView detailPlayerItem2;
@@ -283,6 +290,7 @@ public final class MainController {
     private ImageView[] detailPlayerTypes;
     private ImageView[] detailEnemyTypes;
     private ImageView[] detailPlayerTeamSprites;
+    private StackPane[] detailPlayerTeamCards;
     private ImageView[] detailPlayerItemSprites;
     private Tooltip[] detailPlayerItemTooltips;
     private final int[] detailPlayerTeamItems = new int[6];
@@ -326,6 +334,11 @@ public final class MainController {
         detailMoveTooltips = installMoveTooltips(detailMoveCards);
         detailPlayerTeamSprites = new ImageView[]{detailPlayerTeam0, detailPlayerTeam1, detailPlayerTeam2,
                 detailPlayerTeam3, detailPlayerTeam4, detailPlayerTeam5};
+        detailPlayerTeamCards = new StackPane[]{detailPlayerTeamCard0, detailPlayerTeamCard1,
+                detailPlayerTeamCard2, detailPlayerTeamCard3, detailPlayerTeamCard4, detailPlayerTeamCard5};
+        for (int slot = 0; slot < detailPlayerTeamCards.length; slot++) {
+            updateDetailTeamSlotInteraction(slot, false);
+        }
         detailPlayerItemSprites = new ImageView[]{detailPlayerItem0, detailPlayerItem1, detailPlayerItem2,
                 detailPlayerItem3, detailPlayerItem4, detailPlayerItem5};
         detailPlayerItemTooltips = installItemTooltips(detailPlayerItemSprites);
@@ -786,6 +799,7 @@ public final class MainController {
             renderMove(move, moveId, battle.player(), battle.enemy());
         }
         for (int slot = 0; slot < 6; slot++) {
+            updateDetailTeamSlotInteraction(slot, party[slot].species() != 0);
             loadDetailTeamSprite(detailPlayerTeamSprites[slot], detailPlayerTeamSpecies, slot, party[slot].species());
             renderPartyItem(slot, party[slot]);
             int enemySpecies = battle.enemyTeam()[slot].species();
@@ -794,6 +808,22 @@ public final class MainController {
             enemySlot.setFitWidth(enemySpecies == 0 ? 76 : 56);
             enemySlot.setFitHeight(enemySpecies == 0 ? 68 : 50);
             enemySlot.setImage(enemySpecies == 0 ? missingNoSprite : pokeballSprite);
+        }
+    }
+
+    private void updateDetailTeamSlotInteraction(int slot, boolean occupied) {
+        StackPane card = detailPlayerTeamCards[slot];
+        card.setMouseTransparent(!occupied);
+        if (occupied) {
+            if (!card.getStyleClass().contains("clickable-card")) {
+                card.getStyleClass().add("clickable-card");
+            }
+            card.getStyleClass().remove("team-pokemon-preview-empty");
+        } else {
+            card.getStyleClass().remove("clickable-card");
+            if (!card.getStyleClass().contains("team-pokemon-preview-empty")) {
+                card.getStyleClass().add("team-pokemon-preview-empty");
+            }
         }
     }
 
