@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="root" managed="false" visible="false" focusTraversable="true"
+           onMouseClicked="#closeFromBackdrop" onKeyPressed="#handleKeyPressed"
+           styleClass="battle-log-modal-overlay"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="net.paramada.pokemada.BattleLogController">
+    <VBox maxHeight="650" maxWidth="760" onMouseClicked="#consumeCardClick" styleClass="battle-log-modal-card">
+        <HBox alignment="CENTER_LEFT" styleClass="battle-log-modal-header">
+            <VBox spacing="3" HBox.hgrow="ALWAYS">
+                <Label fx:id="title" text="Registro de combate" styleClass="battle-log-modal-title"/>
+                <Label fx:id="meta" styleClass="battle-log-modal-meta"/>
+            </VBox>
+            <Button text="×" onAction="#close" styleClass="battle-log-modal-close"/>
+        </HBox>
+        <ScrollPane fx:id="eventScroll" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="battle-log-modal-scroll">
+            <content><VBox fx:id="events" spacing="9" styleClass="battle-log-modal-events"/></content>
+        </ScrollPane>
+    </VBox>
+</StackPane>

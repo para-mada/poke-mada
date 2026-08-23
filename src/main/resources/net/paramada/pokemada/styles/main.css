@@ -1,13 +1,30 @@
 .root {
     -fx-font-family: "Segoe UI", sans-serif;
-    -poke-pink: #d5048d;
-    -poke-blue: #0600ff;
-    -poke-purple: #5e1ce3;
+    -poke-violet: #7138e6;
+    -poke-indigo: #3c32bd;
+    -poke-blue: #285cc9;
+    -poke-purple: #5b2fc4;
+    -poke-night: #11152f;
 }
 
-.app-shell {
-    -fx-background-color: #18161d;
+.page-title,
+.card-title,
+.news-heading,
+.live-card-title,
+.detail-header-title,
+.detail-section-title,
+.battle-log-modal-title,
+.pokemon-modal-title,
+.pokemon-modal-section,
+.box-name,
+.legacy-card-title,
+.legacy-dark-heading,
+.master-rail-title,
+.master-portal-title {
+    -fx-font-family: "PKMN RBYGSC";
 }
+
+.app-shell { -fx-background-color: -poke-night; }
 
 .sidebar {
     -fx-background-color: linear-gradient(to bottom, #18171d 0%, #0e0d12 100%);
@@ -16,6 +33,11 @@
 
 .brand-area {
     -fx-padding: 12 18 8 18;
+    -fx-background-color: transparent;
+}
+
+.master-v-nav-wordmark {
+    -fx-effect: null;
 }
 
 .sidebar-separator .line {
@@ -47,7 +69,7 @@
 }
 
 .nav-item:selected {
-    -fx-background-color: linear-gradient(to right, -poke-pink -4%, -poke-blue 104%);
+    -fx-background-color: linear-gradient(to right, -poke-violet -4%, -poke-blue 104%);
     -fx-text-fill: white;
 }
 
@@ -146,7 +168,7 @@
 .card-header {
     -fx-min-height: 66;
     -fx-pref-height: 66;
-    -fx-background-color: -poke-pink;
+    -fx-background-color: linear-gradient(to right, -poke-violet, -poke-indigo);
     -fx-background-radius: 22 22 0 0;
     -fx-padding: 0 28 0 28;
 }
@@ -166,7 +188,7 @@
 }
 
 .news-heading {
-    -fx-text-fill: -poke-pink;
+    -fx-text-fill: -poke-violet;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
@@ -223,7 +245,7 @@
 }
 
 .live-refresh-button {
-    -fx-background-color: linear-gradient(to right, -poke-pink, -poke-purple);
+    -fx-background-color: linear-gradient(to right, -poke-violet, -poke-indigo);
     -fx-background-radius: 18;
     -fx-padding: 10 18;
     -fx-text-fill: white;
@@ -249,12 +271,21 @@
 
 .live-battle-card:hover {
     -fx-background-color: #1d1727;
-    -fx-border-color: rgba(239, 55, 180, 0.72);
-    -fx-effect: dropshadow(gaussian, rgba(225, 25, 157, 0.28), 22, 0.16, 0, 7);
+    -fx-border-color: rgba(126, 91, 235, 0.76);
+    -fx-effect: dropshadow(gaussian, rgba(65, 55, 190, 0.34), 22, 0.16, 0, 7);
+}
+.live-battle-card.battle-card-inactive:hover {
+    -fx-background-color: #15121d;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.38), 18, 0.18, 0, 6);
+}
+.battle-card-inactive .battle-summary-link {
+    -fx-background-color: rgba(255, 255, 255, 0.07);
+    -fx-text-fill: #77717e;
 }
 
 .live-section-kicker {
-    -fx-text-fill: #e620a4;
+    -fx-text-fill: #a582ff;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
@@ -266,7 +297,7 @@
 }
 
 .battle-icon {
-    -fx-text-fill: #d827a5;
+    -fx-text-fill: #9270f2;
     -fx-font-size: 28px;
 }
 .battle-summary-body {
@@ -278,7 +309,7 @@
     -fx-min-height: 142;
     -fx-background-color: linear-gradient(to bottom right, rgba(75, 17, 54, 0.96), rgba(27, 18, 33, 0.96));
     -fx-background-radius: 18;
-    -fx-border-color: rgba(239, 55, 180, 0.22);
+    -fx-border-color: rgba(126, 91, 235, 0.30);
     -fx-border-radius: 18;
     -fx-padding: 10;
 }
@@ -295,7 +326,7 @@
 .battle-summary-link {
     -fx-max-width: 148;
     -fx-alignment: center;
-    -fx-background-color: linear-gradient(to right, #d90891, #6926e8);
+    -fx-background-color: linear-gradient(to right, #7138e6, #285cc9);
     -fx-background-radius: 16;
     -fx-padding: 9 14;
     -fx-text-fill: white;
@@ -312,7 +343,7 @@
 
 .clickable-card { -fx-cursor: hand; }
 .clickable-card:hover {
-    -fx-border-color: rgba(225, 40, 169, 0.65);
+    -fx-border-color: rgba(126, 91, 235, 0.68);
     -fx-border-radius: 20;
 }
 
@@ -343,8 +374,8 @@
     -fx-pref-height: 46;
     -fx-background-radius: 18 18 0 0;
 }
-.player-header { -fx-background-color: #d5048d; }
-.enemy-header { -fx-background-color: #0600ff; }
+.player-header { -fx-background-color: linear-gradient(to right, #7138e6, #5331bd); }
+.enemy-header { -fx-background-color: linear-gradient(to right, #252c83, #285cc9); }
 .detail-header-title { -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; }
 .detail-card-body { -fx-padding: 18 24 20 24; }
 .compact-fighter-body { -fx-min-height: 190; }
@@ -356,7 +387,7 @@
     -fx-border-radius: 20;
     -fx-border-width: 1.3;
 }
-.fighter-identity-card.enemy-identity { -fx-border-color: #ed3dac; }
+.fighter-identity-card.enemy-identity { -fx-border-color: #526ed8; }
 .fighter-identity-card.player-identity { -fx-border-color: #713cff; }
 .detail-pokemon-name { -fx-text-fill: #211d27; -fx-font-size: 17px; -fx-font-weight: bold; }
 .detail-pokemon-meta { -fx-text-fill: #69636f; -fx-font-size: 11px; -fx-font-weight: bold; }
@@ -404,7 +435,7 @@
 .detail-roster { -fx-padding: 18 20 20 20; -fx-min-height: 190; }
 .detail-moves-area { -fx-padding: 0 24 22 24; }
 .detail-versus { -fx-text-fill: rgba(255,255,255,0.45); -fx-font-size: 20px; -fx-font-weight: bold; }
-.detail-section-title { -fx-text-fill: #d5048d; -fx-font-size: 15px; -fx-font-weight: bold; }
+.detail-section-title { -fx-text-fill: #7138e6; -fx-font-size: 15px; -fx-font-weight: bold; }
 .detail-move-card {
     -fx-pref-width: 249;
     -fx-min-height: 38;
@@ -461,7 +492,7 @@
     -fx-background-radius: 6;
 }
 .combat-pokemon-detail .progress-bar > .bar {
-    -fx-background-color: #db008b;
+    -fx-background-color: #7138e6;
     -fx-background-radius: 6;
 }
 .stat-label {
@@ -488,7 +519,7 @@
 .combat-pokemon-detail .progress-bar.stat-tier-high > .bar { -fx-background-color: #50b96f; }
 .combat-pokemon-detail .progress-bar.stat-tier-very-high > .bar { -fx-background-color: #22aeb5; }
 .combat-pokemon-detail .progress-bar.stat-tier-exceptional > .bar { -fx-background-color: #6657db; }
-.combat-pokemon-detail .progress-bar.stat-tier-extreme > .bar { -fx-background-color: #d51a9a; }
+.combat-pokemon-detail .progress-bar.stat-tier-extreme > .bar { -fx-background-color: #5631b8; }
 
 .active-pokemon-meta {
     -fx-text-fill: #b7b1c0;
@@ -528,7 +559,7 @@
 }
 
 .player-side { -fx-text-fill: #9a91ff; }
-.enemy-side { -fx-text-fill: #ff68b8; }
+.enemy-side { -fx-text-fill: #7796f4; }
 
 .active-pokemon-name {
     -fx-text-fill: white;
@@ -560,15 +591,134 @@
 }
 
 .live-mini-chip {
-    -fx-background-color: rgba(213, 4, 141, 0.18);
+    -fx-background-color: rgba(113, 56, 230, 0.20);
     -fx-padding: 5 9;
-    -fx-text-fill: #f65ac2;
+    -fx-text-fill: #b39aff;
     -fx-font-size: 9px;
 }
 
 .log-empty-icon {
     -fx-text-fill: rgba(255, 255, 255, 0.18);
     -fx-font-size: 36px;
+}
+
+.battle-log-list-scroll,
+.battle-log-list-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+.battle-log-list-scroll { -fx-padding: 0; }
+.battle-log-live-row,
+.battle-log-turn-row,
+.battle-log-history-row {
+    -fx-alignment: center-left;
+    -fx-padding: 8 10;
+    -fx-background-color: rgba(255, 255, 255, 0.055);
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.055);
+    -fx-border-radius: 10;
+}
+.battle-log-turn-row {
+    -fx-background-color: linear-gradient(to right, rgba(113, 56, 230, 0.32), rgba(40, 92, 201, 0.26));
+    -fx-border-color: rgba(151, 120, 242, 0.52);
+}
+.battle-log-turn-row .battle-log-row-message {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.battle-log-history-row { -fx-cursor: hand; }
+.battle-log-history-row:hover {
+    -fx-background-color: rgba(113, 56, 230, 0.16);
+    -fx-border-color: rgba(126, 91, 235, 0.46);
+}
+.battle-log-row-time {
+    -fx-text-fill: #a98cf4;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+.battle-log-row-message {
+    -fx-text-fill: #ded9e4;
+    -fx-font-size: 10px;
+}
+.battle-log-history-title {
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.battle-log-history-summary {
+    -fx-text-fill: #8f8997;
+    -fx-font-size: 9px;
+}
+.battle-log-history-arrow {
+    -fx-text-fill: #9f82f2;
+    -fx-font-size: 22px;
+}
+
+.battle-log-modal-overlay {
+    -fx-background-color: rgba(5, 3, 9, 0.72);
+    -fx-padding: 32;
+}
+.battle-log-modal-card {
+    -fx-background-color: #f9f8fa;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.48), 30, 0.22, 0, 10);
+}
+.battle-log-modal-header {
+    -fx-min-height: 82;
+    -fx-padding: 14 24;
+    -fx-background-color: linear-gradient(to right, #7138e6, #263c9a);
+    -fx-background-radius: 20 20 0 0;
+}
+.battle-log-modal-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+.battle-log-modal-meta {
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+.battle-log-modal-close {
+    -fx-background-color: rgba(255, 255, 255, 0.14);
+    -fx-background-radius: 18;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+}
+.battle-log-modal-scroll,
+.battle-log-modal-scroll > .viewport { -fx-background-color: transparent; }
+.battle-log-modal-events { -fx-padding: 22 24 26 24; }
+.battle-log-modal-event {
+    -fx-alignment: top-left;
+    -fx-padding: 12 14;
+    -fx-background-color: #eeeaf1;
+    -fx-background-radius: 12;
+}
+.battle-log-modal-turn {
+    -fx-alignment: center-left;
+    -fx-padding: 9 14;
+    -fx-background-color: linear-gradient(to right, #7138e6, #285cc9);
+    -fx-background-radius: 12;
+}
+.battle-log-modal-turn .battle-log-modal-time,
+.battle-log-modal-turn .battle-log-modal-message {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.battle-log-modal-time {
+    -fx-min-width: 58;
+    -fx-text-fill: #c20b83;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.battle-log-modal-message {
+    -fx-text-fill: #302a34;
+    -fx-font-size: 12px;
+}
+.battle-log-modal-empty {
+    -fx-padding: 28;
+    -fx-text-fill: #817a86;
+    -fx-font-size: 12px;
 }
 
 .team-summary {
@@ -634,24 +784,32 @@
 .pokemon-modal-content { -fx-padding: 24 30 28 30; }
 .pokemon-modal-identity {
     -fx-padding: 14;
-    -fx-border-color: #d5048d;
+    -fx-border-color: #7138e6;
     -fx-border-radius: 20;
     -fx-background-radius: 20;
 }
 .pokemon-modal-name { -fx-text-fill: #211d27; -fx-font-size: 19px; -fx-font-weight: bold; }
 .pokemon-modal-meta { -fx-text-fill: #746d79; -fx-font-size: 11px; -fx-font-weight: bold; }
 .pokemon-modal-data { -fx-text-fill: #403a45; -fx-font-size: 11px; -fx-font-weight: bold; }
-.pokemon-modal-section { -fx-text-fill: #d5048d; -fx-font-size: 15px; -fx-font-weight: bold; }
+.pokemon-modal-section { -fx-text-fill: #7138e6; -fx-font-size: 15px; -fx-font-weight: bold; }
 .pokemon-modal-separator { -fx-background-color: #e8e5e9; }
-.stat-legend-base { -fx-text-fill: #d5048d; -fx-font-size: 10px; -fx-font-weight: bold; }
+.stat-legend-base { -fx-text-fill: #7138e6; -fx-font-size: 10px; -fx-font-weight: bold; }
 .stat-legend-real { -fx-text-fill: #2357db; -fx-font-size: 10px; -fx-font-weight: bold; }
 .modal-stat-name { -fx-min-width: 82; -fx-text-fill: #37313c; -fx-font-size: 10px; -fx-font-weight: bold; }
 .modal-stat-values { -fx-min-width: 58; -fx-text-fill: #655e6a; -fx-font-size: 10px; -fx-font-weight: bold; }
 .modal-stat-track { -fx-min-height: 9; -fx-background-color: #e4e3e6; -fx-background-radius: 5; }
 .modal-stat-base, .modal-stat-real { -fx-min-height: 9; -fx-pref-height: 9; }
 .modal-stat-base > .track, .modal-stat-real > .track { -fx-background-color: transparent; }
-.modal-stat-base > .bar { -fx-background-color: #d5048d; -fx-background-radius: 5; }
-.modal-stat-real > .bar { -fx-background-color: #2357db; -fx-background-radius: 5; }
+.modal-stat-base > .bar {
+    -fx-background-color: #7138e6;
+    -fx-background-insets: 1 0 1 2;
+    -fx-background-radius: 5;
+}
+.modal-stat-real > .bar {
+    -fx-background-color: #2357db;
+    -fx-background-insets: 1 0 1 2;
+    -fx-background-radius: 5;
+}
 .matchup-chip {
     -fx-alignment: center;
     -fx-padding: 5 8;
@@ -683,7 +841,7 @@
 .boxes-toolbar {
     -fx-min-height: 76;
     -fx-padding: 12 20;
-    -fx-background-color: linear-gradient(to right, #d5048d, #7628ed);
+    -fx-background-color: linear-gradient(to right, #7138e6, #273e9f);
     -fx-background-radius: 20 20 0 0;
 }
 .box-name { -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; }
@@ -727,32 +885,70 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 24, 0.14, 0, 9);
 }
 .legacy-card-header { -fx-min-height: 62; -fx-padding: 0 26; -fx-background-radius: 20 20 0 0; }
-.pink-header { -fx-background-color: #d5048d; }
-.blue-header { -fx-background-color: #2218ef; }
+.pink-header { -fx-background-color: linear-gradient(to right, #7138e6, #5331bd); }
+.blue-header { -fx-background-color: linear-gradient(to right, #252c83, #285cc9); }
 .legacy-card-title { -fx-text-fill: white; -fx-font-size: 19px; -fx-font-weight: bold; }
 .legacy-card-body { -fx-padding: 28 32 30 32; }
 .legacy-dark-heading { -fx-text-fill: #29232f; -fx-font-size: 16px; -fx-font-weight: bold; }
 .legacy-field-label, .mail-table-header .label { -fx-text-fill: #5d5663; -fx-font-size: 10px; -fx-font-weight: bold; }
 .legacy-placeholder-note { -fx-text-fill: #8b8490; -fx-font-size: 11px; }
 .placeholder-versus { -fx-alignment: center; -fx-min-width: 46; -fx-padding: 29 0 0 0; -fx-text-fill: #aaa3af; -fx-font-weight: bold; }
-.legacy-primary-button { -fx-background-color: #d5048d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 20; }
-.legacy-outline-button { -fx-background-color: transparent; -fx-border-color: #d5048d; -fx-border-radius: 18; -fx-text-fill: #d5048d; -fx-font-weight: bold; }
+.legacy-primary-button { -fx-background-color: #7138e6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 20; }
+.legacy-outline-button { -fx-background-color: transparent; -fx-border-color: #7138e6; -fx-border-radius: 18; -fx-text-fill: #7138e6; -fx-font-weight: bold; }
 .wildcard-placeholder {
     -fx-min-width: 185; -fx-pref-width: 185; -fx-min-height: 235; -fx-pref-height: 235;
     -fx-background-color: linear-gradient(to bottom right, #eeeaf0, #ddd7e1); -fx-background-radius: 16;
     -fx-border-color: #cfc7d3; -fx-border-radius: 16;
 }
 .wildcard-placeholder .label { -fx-text-fill: #aaa2ae; -fx-font-size: 11px; -fx-font-weight: bold; }
-.mail-empty-icon { -fx-text-fill: #d5048d; -fx-font-size: 52px; }
+.mail-empty-icon { -fx-text-fill: #7138e6; -fx-font-size: 52px; }
 .roulette-page { -fx-min-height: 720; }
-.roulette-selector { -fx-padding: 28 16; -fx-background-color: rgba(25, 19, 30, 0.94); -fx-background-radius: 20; }
-.roulette-selector-title { -fx-padding: 0 8 8 8; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; }
-.roulette-banner { -fx-padding: 17 12; -fx-background-color: rgba(255,255,255,0.08); -fx-background-radius: 13; -fx-text-fill: #aaa3af; -fx-font-size: 10px; -fx-font-weight: bold; }
-.roulette-banner.active-banner { -fx-background-color: linear-gradient(to right, #d5048d, #7628ed); -fx-text-fill: white; }
-.roulette-counter-label { -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; }
-.roulette-counter { -fx-padding: 7 13; -fx-background-color: #ffc925; -fx-background-radius: 16; -fx-text-fill: #231b29; -fx-font-weight: bold; }
-.roulette-hero { -fx-background-color: linear-gradient(to bottom right, #8c116d, #33176d); -fx-background-radius: 22; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 22, 0.15, 0, 8); }
-.roulette-hero-title { -fx-text-fill: white; -fx-font-size: 46px; -fx-font-weight: bold; }
-.roulette-hero-copy { -fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px; }
-.roulette-spin-button { -fx-padding: 14 50; -fx-background-color: #ff46c5; -fx-background-radius: 28; -fx-text-fill: white; -fx-font-size: 17px; -fx-font-weight: bold; }
-.roulette-secondary-button { -fx-padding: 10 17; -fx-background-color: linear-gradient(to right, #7628ed, #4d18dc); -fx-background-radius: 18; -fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold; }
+.master-v-gacha .button:disabled { -fx-opacity: 1; }
+.master-banner-rail {
+    -fx-min-height: 610; -fx-padding: 22 14;
+    -fx-background-color: linear-gradient(to bottom, rgba(5, 8, 24, 0.98), rgba(24, 16, 63, 0.98));
+    -fx-background-radius: 22; -fx-border-color: rgba(83, 117, 255, 0.34); -fx-border-radius: 22;
+}
+.master-rail-heading { -fx-padding: 2 8 13 8; }
+.master-rail-title { -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; }
+.master-rail-subtitle, .master-small-label { -fx-text-fill: #7887bc; -fx-font-size: 8px; -fx-font-weight: bold; }
+.master-banner {
+    -fx-alignment: center-left; -fx-padding: 17 14; -fx-background-radius: 14;
+    -fx-background-color: linear-gradient(to right, rgba(56, 49, 158, 0.28), rgba(121, 42, 211, 0.16));
+    -fx-border-radius: 14; -fx-border-color: rgba(255,255,255,0.07);
+    -fx-text-fill: #aeb8e0; -fx-font-size: 10px; -fx-font-weight: bold;
+}
+.master-banner.moon-banner { -fx-background-color: linear-gradient(to right, rgba(35,78,186,0.22), rgba(78,39,167,0.14)); }
+.master-banner.z-banner { -fx-background-color: linear-gradient(to right, rgba(92,38,183,0.20), rgba(26,105,209,0.14)); }
+.master-banner.active-banner { -fx-border-color: #8069ff; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(90,90,255,0.48), 15, 0.25, 0, 0); }
+.master-guarantee-card { -fx-padding: 14; -fx-background-color: rgba(255,255,255,0.055); -fx-background-radius: 13; }
+.master-guarantee-value { -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; }
+.master-pity-bar > .track { -fx-background-color: rgba(255,255,255,0.09); -fx-background-radius: 5; }
+.master-pity-bar > .bar { -fx-background-color: linear-gradient(to right, #3b70ff, #9827df); -fx-background-radius: 5; }
+.master-wallet { -fx-padding: 10 14; -fx-background-color: rgba(5,8,25,0.93); -fx-background-radius: 15; -fx-border-color: rgba(93,125,255,0.20); -fx-border-radius: 15; }
+.master-ticket-icon { -fx-text-fill: #f2f5ff; -fx-font-size: 22px; -fx-effect: dropshadow(gaussian, #577bff, 9, 0.3, 0, 0); }
+.master-wallet-value { -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; }
+.master-season-chip { -fx-padding: 6 10; -fx-background-color: rgba(104,67,233,0.18); -fx-background-radius: 13; -fx-text-fill: #aa9cff; -fx-font-size: 8px; -fx-font-weight: bold; }
+.master-portal-card {
+    -fx-background-color: radial-gradient(center 50% 44%, radius 72%, #20245e 0%, #11143b 45%, #030611 100%);
+    -fx-background-radius: 25; -fx-border-color: rgba(88,119,255,0.40); -fx-border-radius: 25;
+    -fx-effect: dropshadow(gaussian, rgba(2,3,15,0.75), 30, 0.2, 0, 11);
+}
+.master-orbit { -fx-fill: transparent; -fx-stroke: rgba(104,132,255,0.25); -fx-stroke-width: 1.2; }
+.master-orbit.inner-orbit { -fx-stroke: rgba(164,84,255,0.32); -fx-stroke-dash-array: 5 8; }
+.master-orbit.outer-orbit { -fx-stroke-dash-array: 2 10; }
+.master-prize-orb { -fx-alignment: center; -fx-min-width: 42; -fx-min-height: 42; -fx-background-radius: 22; -fx-font-size: 16px; -fx-font-weight: bold; }
+.common-orb { -fx-background-color: #69738f; -fx-text-fill: white; }
+.rare-orb { -fx-background-color: #347cff; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, #347cff, 12, 0.25, 0, 0); }
+.epic-orb { -fx-background-color: #913bec; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, #913bec, 14, 0.3, 0, 0); }
+.legendary-orb { -fx-background-color: #f2f5ff; -fx-text-fill: #322266; -fx-effect: dropshadow(gaussian, #9e80ff, 18, 0.38, 0, 0); }
+.master-event-logo { -fx-effect: dropshadow(gaussian, rgba(75,83,255,0.70), 24, 0.28, 0, 0); }
+.master-portal-title { -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; }
+.master-portal-copy { -fx-text-fill: #aeb6db; -fx-font-size: 11px; }
+.master-summon-button { -fx-padding: 12 42; -fx-background-color: linear-gradient(to right, #315dff, #922be3); -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(83,64,255,0.55), 18, 0.24, 0, 4); }
+.master-rarity { -fx-padding: 5 8; -fx-background-radius: 11; -fx-font-size: 8px; -fx-font-weight: bold; }
+.common-rarity { -fx-background-color: rgba(120,128,151,0.22); -fx-text-fill: #b7bdcb; }
+.rare-rarity { -fx-background-color: rgba(51,124,255,0.18); -fx-text-fill: #73a9ff; }
+.epic-rarity { -fx-background-color: rgba(145,59,236,0.20); -fx-text-fill: #c18aff; }
+.legendary-rarity { -fx-background-color: rgba(220,225,255,0.18); -fx-text-fill: #e7e9ff; }
+.master-text-button { -fx-background-color: transparent; -fx-text-fill: #aeb8df; -fx-font-size: 9px; -fx-font-weight: bold; }

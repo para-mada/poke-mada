@@ -29,8 +29,9 @@
         <VBox prefWidth="264.0" styleClass="sidebar">
             <children>
                 <StackPane minHeight="116.0" prefHeight="116.0" styleClass="brand-area">
-                    <ImageView fitHeight="88.0" fitWidth="220.0" preserveRatio="true">
-                        <image><Image url="@assets/width_logo.png"/></image>
+                    <ImageView fitHeight="82.0" fitWidth="226.0" preserveRatio="true" smooth="true"
+                               styleClass="master-v-nav-wordmark">
+                        <image><Image url="@assets/master-v-wordmark.png"/></image>
                     </ImageView>
                 </StackPane>
                 <Separator styleClass="sidebar-separator"/>
@@ -161,7 +162,7 @@
                         <padding><Insets bottom="44.0" left="36.0" right="36.0" top="28.0"/></padding>
 
                         <HBox spacing="20.0">
-                            <VBox prefWidth="440.0" minWidth="0.0" spacing="14.0" onMouseClicked="#openCombatDetails"
+                            <VBox fx:id="battleSummaryCard" prefWidth="440.0" minWidth="0.0" spacing="14.0" onMouseClicked="#openCombatDetails"
                                   styleClass="live-battle-card, clickable-card" HBox.hgrow="ALWAYS">
                                 <HBox alignment="CENTER_LEFT">
                                     <VBox HBox.hgrow="ALWAYS">
@@ -177,7 +178,7 @@
                                     </VBox>
                                     <VBox spacing="8.0" HBox.hgrow="ALWAYS">
                                         <Label fx:id="battleSummaryMessage" text="Esperando un combate" wrapText="true" styleClass="battle-summary-message"/>
-                                        <Label text="ABRIR DETALLE  →" wrapText="true" styleClass="battle-summary-link"/>
+                                        <Label fx:id="battleSummaryLink" text="ABRIR DETALLE  →" wrapText="true" styleClass="battle-summary-link"/>
                                     </VBox>
                                 </HBox>
                                 <VBox managed="false" visible="false">
@@ -195,13 +196,14 @@
                             <VBox prefWidth="310.0" spacing="12.0" styleClass="live-log-card">
                                 <HBox alignment="CENTER_LEFT">
                                     <Label text="REGISTRO" styleClass="live-section-kicker" HBox.hgrow="ALWAYS"/>
-                                    <Label text="EN VIVO" styleClass="live-mini-chip"/>
+                                    <Label fx:id="combatLogModeChip" text="HISTORIAL" styleClass="live-mini-chip"/>
                                 </HBox>
-                                <VBox alignment="CENTER" spacing="8.0" VBox.vgrow="ALWAYS">
-                                    <Label text="◌" styleClass="log-empty-icon"/>
-                                    <Label fx:id="combatLogLabel" text="No hay un combate activo"
-                                           wrapText="true" styleClass="live-muted"/>
-                                </VBox>
+                                <Label fx:id="combatLogLabel" text="No hay combates guardados"
+                                       wrapText="true" styleClass="live-muted"/>
+                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="150"
+                                            VBox.vgrow="ALWAYS" styleClass="battle-log-list-scroll">
+                                    <content><VBox fx:id="combatLogEntries" spacing="7"/></content>
+                                </ScrollPane>
                             </VBox>
                         </HBox>
 
@@ -363,13 +365,15 @@
                                         <StackPane userData="5" onMouseClicked="#openPokemonDetails" styleClass="team-pokemon-preview, clickable-card"><ImageView fx:id="detailPlayerTeam5" fitHeight="68.0" fitWidth="76.0" preserveRatio="true" smooth="false"/><ImageView fx:id="detailPlayerItem5" fitHeight="20" fitWidth="20" managed="false" visible="false" preserveRatio="true" StackPane.alignment="BOTTOM_RIGHT" styleClass="team-item-badge"/></StackPane>
                                     </FlowPane>
                                 </VBox>
-                                <Button text="L O G  D E  B A T A L L A   ⚔" maxWidth="Infinity" styleClass="battle-log-button"/>
+                                <Button text="L O G  D E  B A T A L L A   ⚔" maxWidth="Infinity"
+                                        onAction="#openCurrentBattleLog" styleClass="battle-log-button"/>
                             </VBox>
                         </GridPane>
                     </VBox>
                 </content>
             </ScrollPane>
             <fx:include fx:id="pokemonDetail" source="pokemon-detail-view.fxml"/>
+            <fx:include fx:id="battleLog" source="battle-log-view.fxml"/>
         </StackPane>
     </center>
 </BorderPane>

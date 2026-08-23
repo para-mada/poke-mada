@@ -14,7 +14,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import net.paramada.pokemada.battlelog.BattleLogEvent;
+import net.paramada.pokemada.battlelog.BattleLogManager;
+import net.paramada.pokemada.battlelog.BattleLogSession;
+import net.paramada.pokemada.battlelog.BattleLogStore;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;
 import net.paramada.pokemada.game.assets.PokemonBaseStats;
 import net.paramada.pokemada.game.assets.PokemonMoveDex;
@@ -24,14 +29,21 @@ import net.paramada.pokemada.game.assets.PokemonItemDex;
 import net.paramada.pokemada.game.assets.PokemonItemSpriteCache;
 import net.paramada.pokemada.game.assets.PokemonSpeciesDex;
 import net.paramada.pokemada.game.official.shared.crypto.PokemonCrypto;
+import net.paramada.pokemada.game.official.sm.SmBattleTextReader;
 import net.paramada.pokemada.game.official.sm.SmMemoryMap;
 import net.paramada.pokemada.protocol.citra.CitraUdpClient;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,10 +70,13 @@ public final class MainController {
     @FXML private Label emulatorConnectionStatus;
     @FXML private ImageView emulatorConnectionIcon;
     @FXML private PokemonDetailController pokemonDetailController;
+    @FXML private BattleLogController battleLogController;
     @FXML
     private Label battleModeLabel;
     @FXML
     private Label battleSummaryMessage;
+    @FXML private VBox battleSummaryCard;
+    @FXML private Label battleSummaryLink;
     @FXML
     private Label playerActiveLabel;
     @FXML
@@ -96,6 +111,8 @@ public final class MainController {
     private ProgressBar enemyHpBar;
     @FXML
     private Label combatLogLabel;
+    @FXML private Label combatLogModeChip;
+    @FXML private VBox combatLogEntries;
     @FXML
     private Label teamSummaryLabel;
     @FXML
@@ -234,6 +251,8 @@ public final class MainController {
     private ImageView partySlot5Sprite;
 
     private final AtomicBoolean refreshingLiveData = new AtomicBoolean();
+    private final AtomicBoolean pollingBattleText = new AtomicBoolean();
+    private final BattleLogManager battleLogManager = new BattleLogManager(new BattleLogStore());
     private final PokemonSpriteCache spriteCache = new PokemonSpriteCache();
     private final PokemonItemSpriteCache itemSpriteCache = new PokemonItemSpriteCache();
     private final Image missingNoSprite = bundledImage("missingno.png");
@@ -241,6 +260,9 @@ public final class MainController {
     private final Image emulatorConnectedIcon = bundledImage("lime_logo.png");
     private final Image emulatorDisconnectedIcon = bundledImage("lime_logo_off.png");
     private Timeline liveRefreshTimeline;
+    private Timeline battleTextTimeline;
+    private volatile boolean battleActive;
+    private volatile boolean singleBattleActive;
     private Label[] partyNames;
     private Label[] partyDetails;
     private Label[] partyHp;
@@ -274,6 +296,8 @@ public final class MainController {
     private final int[] detailEnemyTeamSpecies = new int[6];
     private PartySnapshot[] lastLoggedParty = new PartySnapshot[0];
     private PartySnapshot[] latestParty = new PartySnapshot[0];
+    private static final DateTimeFormatter BATTLE_HISTORY_TIME = DateTimeFormatter
+            .ofPattern("dd MMM · HH:mm", new Locale("es", "MX"));
 
     @FXML
     private void initialize() {
@@ -315,13 +339,21 @@ public final class MainController {
         detailPlayerItemTooltip = installDescriptionTooltip(detailPlayerItem);
         detailEnemyAbilityTooltip = installDescriptionTooltip(detailEnemyAbility);
         detailEnemyItemTooltip = installDescriptionTooltip(detailEnemyItem);
-        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ignored -> {
-            if (liveView.isVisible() || combatDetailView.isVisible()) {
-                refreshLiveData();
-            }
-        }));
+        updateBattleCardInteraction(false);
+        try {
+            battleLogManager.loadHistory();
+        } catch (IOException exception) {
+            LOGGER.log(System.Logger.Level.WARNING, "Could not load battle log history", exception);
+        }
+        renderBattleLogPanel();
+        // Battle detection must remain independent from the currently selected screen.
+        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ignored -> refreshLiveData()));
         liveRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         liveRefreshTimeline.play();
+        battleTextTimeline = new Timeline(new KeyFrame(Duration.millis(350), ignored -> pollBattleText()));
+        battleTextTimeline.setCycleCount(Timeline.INDEFINITE);
+        battleTextTimeline.play();
+        refreshLiveData();
     }
 
     @FXML
@@ -357,6 +389,7 @@ public final class MainController {
 
     @FXML
     private void openCombatDetails() {
+        if (!battleActive) return;
         liveView.setManaged(false);
         liveView.setVisible(false);
         combatDetailView.setManaged(true);
@@ -394,6 +427,24 @@ public final class MainController {
                 });
             } finally {
                 refreshingLiveData.set(false);
+            }
+        });
+    }
+
+    private void pollBattleText() {
+        if (!battleActive || !pollingBattleText.compareAndSet(false, true)) return;
+        Thread.startVirtualThread(() -> {
+            try (CitraUdpClient client = new CitraUdpClient()) {
+                String message = new SmBattleTextReader(client).read().message();
+                Platform.runLater(() -> {
+                    if (battleActive && battleLogManager.record(Instant.now(), message, singleBattleActive)) {
+                        updateActiveBattleLogModal();
+                    }
+                });
+            } catch (Exception exception) {
+                LOGGER.log(System.Logger.Level.DEBUG, "Battle text poll failed", exception);
+            } finally {
+                pollingBattleText.set(false);
             }
         });
     }
@@ -457,7 +508,8 @@ public final class MainController {
         BattlePokemonSnapshot[] enemyTeam = parseBattleTeam(region, combat.pokemonStride(), 12);
         BattlePokemonSnapshot player = findBattlePokemon(playerTeam, active.playerOne());
         BattlePokemonSnapshot enemy = findBattlePokemon(enemyTeam, active.enemyOne());
-        return new BattleSnapshot(player, enemy, playerTeam, enemyTeam);
+        String battleText = new SmBattleTextReader(client).read().message();
+        return new BattleSnapshot(player, enemy, playerTeam, enemyTeam, battleText);
     }
 
     private static BattlePokemonSnapshot[] parseBattleTeam(byte[] region, int stride, int firstSlot) {
@@ -558,6 +610,9 @@ public final class MainController {
         boolean inBattle = hasActiveAddresses
                 && battle.player().species() != 0
                 && battle.enemy().species() != 0;
+        boolean singleBattle = inBattle && active.playerTwo() == 0 && active.enemyTwo() == 0;
+        updateBattleLogState(inBattle, singleBattle, battle.battleText());
+        updateBattleCardInteraction(inBattle);
         if (!inBattle && combatDetailView.isVisible()) {
             closeCombatDetails();
         }
@@ -573,7 +628,99 @@ public final class MainController {
                 enemyHpLabel, enemyHpBar, enemyBattleDetailsLabel, enemyActiveSprite);
         renderMoves(battle.player());
         renderCombatDetails(party, battle);
-        combatLogLabel.setText(inBattle ? "Combate detectado · esperando eventos" : "No hay un combate activo");
+    }
+
+    private void updateBattleCardInteraction(boolean inBattle) {
+        battleSummaryCard.setMouseTransparent(!inBattle);
+        battleSummaryLink.setText(inBattle ? "ABRIR DETALLE  →" : "ESPERANDO COMBATE");
+        if (inBattle) {
+            if (!battleSummaryCard.getStyleClass().contains("clickable-card")) {
+                battleSummaryCard.getStyleClass().add("clickable-card");
+            }
+            battleSummaryCard.getStyleClass().remove("battle-card-inactive");
+        } else {
+            battleSummaryCard.getStyleClass().remove("clickable-card");
+            if (!battleSummaryCard.getStyleClass().contains("battle-card-inactive")) {
+                battleSummaryCard.getStyleClass().add("battle-card-inactive");
+            }
+        }
+    }
+
+    private void updateBattleLogState(boolean inBattle, boolean singleBattle, String latestMessage) {
+        Instant now = Instant.now();
+        battleActive = inBattle;
+        singleBattleActive = singleBattle;
+        if (inBattle) {
+            if (!battleLogManager.isActive()) battleLogManager.begin(now);
+            if (battleLogManager.record(now, latestMessage, singleBattle)) updateActiveBattleLogModal();
+        } else if (battleLogManager.isActive()) {
+            try {
+                battleLogManager.finish(now);
+                battleLogController.closeActive();
+            } catch (IOException exception) {
+                LOGGER.log(System.Logger.Level.ERROR, "Could not persist battle log", exception);
+            }
+        }
+        renderBattleLogPanel();
+    }
+
+    private void renderBattleLogPanel() {
+        combatLogEntries.getChildren().clear();
+        combatLogModeChip.setText("HISTORIAL");
+        List<BattleLogSession> recent = battleLogManager.recent();
+        combatLogLabel.setText(recent.isEmpty() ? "No hay combates guardados" : "Últimos 3 combates");
+        for (BattleLogSession session : recent) combatLogEntries.getChildren().add(historyRow(session));
+    }
+
+    private void updateActiveBattleLogModal() {
+        battleLogManager.activeStartedAt().ifPresent(started ->
+                battleLogController.updateActive(started, battleLogManager.activeEvents()));
+    }
+
+    private HBox historyRow(BattleLogSession session) {
+        Label title = new Label(BATTLE_HISTORY_TIME.format(session.startedAt().atZone(ZoneId.systemDefault())));
+        title.getStyleClass().add("battle-log-history-title");
+        String firstMessage = session.events().stream()
+                .map(BattleLogEvent::message)
+                .filter(message -> !BattleLogManager.isTurnMarker(message))
+                .findFirst()
+                .orElse("Sin eventos");
+        Label summary = new Label(session.events().size() + (session.events().size() == 1 ? " evento · " : " eventos · ")
+                + firstMessage);
+        summary.setWrapText(true);
+        summary.getStyleClass().add("battle-log-history-summary");
+        VBox text = new VBox(2, title, summary);
+        HBox.setHgrow(text, Priority.ALWAYS);
+        Label arrow = new Label("›");
+        arrow.getStyleClass().add("battle-log-history-arrow");
+        HBox row = new HBox(8, text, arrow);
+        row.getStyleClass().add("battle-log-history-row");
+        row.setOnMouseClicked(ignored -> battleLogController.show(session));
+        return row;
+    }
+
+    @FXML
+    private void openCurrentBattleLog() {
+        if (battleLogManager.isActive()) {
+            battleLogManager.activeStartedAt().ifPresent(started ->
+                    battleLogController.showActive(started, battleLogManager.activeEvents()));
+        } else if (!battleLogManager.recent().isEmpty()) {
+            battleLogController.show(battleLogManager.recent().getFirst());
+        }
+    }
+
+    public void shutdown() {
+        battleActive = false;
+        singleBattleActive = false;
+        if (liveRefreshTimeline != null) liveRefreshTimeline.stop();
+        if (battleTextTimeline != null) battleTextTimeline.stop();
+        if (battleLogManager.isActive()) {
+            try {
+                battleLogManager.finish(Instant.now());
+            } catch (IOException exception) {
+                LOGGER.log(System.Logger.Level.ERROR, "Could not persist open battle log during shutdown", exception);
+            }
+        }
     }
 
     @FXML
@@ -1174,14 +1321,15 @@ public final class MainController {
     }
 
     private record BattleSnapshot(BattlePokemonSnapshot player, BattlePokemonSnapshot enemy,
-                                  BattlePokemonSnapshot[] playerTeam, BattlePokemonSnapshot[] enemyTeam) {
+                                  BattlePokemonSnapshot[] playerTeam, BattlePokemonSnapshot[] enemyTeam,
+                                  String battleText) {
         private static BattleSnapshot empty() {
             BattlePokemonSnapshot[] playerTeam = new BattlePokemonSnapshot[6];
             BattlePokemonSnapshot[] enemyTeam = new BattlePokemonSnapshot[6];
             Arrays.fill(playerTeam, BattlePokemonSnapshot.empty());
             Arrays.fill(enemyTeam, BattlePokemonSnapshot.empty());
             return new BattleSnapshot(BattlePokemonSnapshot.empty(), BattlePokemonSnapshot.empty(),
-                    playerTeam, enemyTeam);
+                    playerTeam, enemyTeam, "");
         }
     }
 
