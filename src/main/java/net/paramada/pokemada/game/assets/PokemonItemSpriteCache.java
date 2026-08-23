@@ -1,6 +1,7 @@
 package net.paramada.pokemada.game.assets;
 
 import javafx.scene.image.Image;
+import net.paramada.pokemada.platform.AppDirectories;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -22,9 +23,17 @@ public final class PokemonItemSpriteCache {
     private static final URI ROOT = URI.create(
             "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/");
     private static final Duration TIMEOUT = Duration.ofSeconds(12);
-    private final Path directory = Path.of(System.getProperty("user.home"), ".poke-mada", "cache", "items");
+    private final Path directory;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
     private final ConcurrentMap<String, CompletableFuture<Optional<Image>>> memory = new ConcurrentHashMap<>();
+
+    public PokemonItemSpriteCache() {
+        this(AppDirectories.cacheDirectory().resolve("items"));
+    }
+
+    PokemonItemSpriteCache(Path directory) {
+        this.directory = directory;
+    }
 
     public CompletableFuture<Optional<Image>> load(String identifier) {
         if (identifier == null || !identifier.matches("[a-z0-9-]+")) {

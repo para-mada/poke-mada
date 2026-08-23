@@ -10,10 +10,19 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SmMemoryMapTest {
+    @Test
+    void battleTextConsensusExcludesUnstableRenderBox() {
+        assertEquals(2, SmMemoryMap.BATTLE_TEXT_CONSENSUS_ADDRESSES.size());
+        assertFalse(SmMemoryMap.BATTLE_TEXT_CONSENSUS_ADDRESSES
+                .contains(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS));
+        assertEquals(3, SmMemoryMap.BATTLE_TEXT_MIRROR_ADDRESSES.size());
+    }
+
     @Test
     void exposesCanonicalSunMoonPartyLocations() {
         GameMemoryMap map = SmMemoryMap.INSTANCE;

@@ -7,9 +7,13 @@ import java.util.Objects;
 public final class CitraPacketCodec {
     public static final int VERSION = 1;
     public static final int HEADER_SIZE = 16;
-    public static final int MAX_REQUEST_DATA_SIZE = 32;
+    /** Read-reply size supported by MadaLime's extended RPC contract. */
+    public static final int MAX_READ_SIZE = 1024;
+    /** Read-reply size used by unmodified Citra/Lime3DS RPC servers. */
+    public static final int LEGACY_MAX_READ_SIZE = 32;
     public static final int MEMORY_OPERATION_PREFIX_SIZE = 8;
-    public static final int MAX_WRITE_CONTENT_SIZE = MAX_REQUEST_DATA_SIZE - MEMORY_OPERATION_PREFIX_SIZE;
+    /** MadaLime deliberately preserves the original write capability. */
+    public static final int MAX_WRITE_CONTENT_SIZE = 24;
 
     private static final long MAX_UNSIGNED_INT = 0xffff_ffffL;
 
@@ -54,8 +58,8 @@ public final class CitraPacketCodec {
 
     public static byte[] readMemoryRequest(long requestId, long address, int size) {
         requireUnsignedInt(address, "address");
-        if (size < 1 || size > MAX_REQUEST_DATA_SIZE) {
-            throw new IllegalArgumentException("Read size must be between 1 and " + MAX_REQUEST_DATA_SIZE);
+        if (size < 1 || size > MAX_READ_SIZE) {
+            throw new IllegalArgumentException("Read size must be between 1 and " + MAX_READ_SIZE);
         }
 
         ByteBuffer data = littleEndianBuffer(MEMORY_OPERATION_PREFIX_SIZE);

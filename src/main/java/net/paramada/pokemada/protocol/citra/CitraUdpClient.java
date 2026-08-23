@@ -3,7 +3,6 @@ package net.paramada.pokemada.protocol.citra;
 import net.paramada.pokemada.game.memory.MemoryClient;
 import net.paramada.pokemada.game.memory.MemoryAddressSpace;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,6 +13,8 @@ import java.net.SocketTimeoutException;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public final class CitraUdpClient implements MemoryClient {
@@ -23,11 +24,14 @@ public final class CitraUdpClient implements MemoryClient {
     public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(3);
 
     private static final int MAX_DATAGRAM_SIZE = 65_507;
+    private static final int READ_PIPELINE_WINDOW = 48;
     private static final long MAX_UNSIGNED_INT = 0xffff_ffffL;
 
     private final DatagramSocket socket;
     private final Duration timeout;
     private long nextRequestId;
+    private int maximumReadSize = CitraPacketCodec.MAX_READ_SIZE;
+    private boolean extendedReadConfirmed;
     private volatile boolean closed;
 
     public CitraUdpClient() throws IOException {
@@ -47,6 +51,7 @@ public final class CitraUdpClient implements MemoryClient {
 
         socket = new DatagramSocket();
         try {
+            socket.setReceiveBufferSize(4 * 1024 * 1024);
             socket.connect(new InetSocketAddress(InetAddress.getByName(host), port));
         } catch (IOException | RuntimeException exception) {
             socket.close();
@@ -63,27 +68,33 @@ public final class CitraUdpClient implements MemoryClient {
             return new byte[0];
         }
 
-        ByteArrayOutputStream result = new ByteArrayOutputStream(size);
-        long currentAddress = address;
-        int remaining = size;
-        while (remaining > 0) {
-            int chunkSize = Math.min(remaining, CitraPacketCodec.MAX_REQUEST_DATA_SIZE);
-            long requestId = nextRequestId();
-            byte[] request = CitraPacketCodec.readMemoryRequest(requestId, currentAddress, chunkSize);
-            send(request);
+        byte[] result = new byte[size];
+        int completed = 0;
 
+        if (!extendedReadConfirmed && maximumReadSize > CitraPacketCodec.LEGACY_MAX_READ_SIZE
+                && size > CitraPacketCodec.LEGACY_MAX_READ_SIZE) {
+            int chunkSize = Math.min(size, maximumReadSize);
+            long requestId = nextRequestId();
+            byte[] request = CitraPacketCodec.readMemoryRequest(requestId, address, chunkSize);
+            send(request);
             CitraPacket response = awaitResponse(requestId, CitraRequestType.READ_MEMORY);
             byte[] responseData = response.data();
-            if (responseData.length != chunkSize) {
+            if (responseData.length == 0 && chunkSize > CitraPacketCodec.LEGACY_MAX_READ_SIZE) {
+                maximumReadSize = CitraPacketCodec.LEGACY_MAX_READ_SIZE;
+            } else if (responseData.length != chunkSize) {
                 throw new IOException(
                         "Citra returned %d bytes for a %d-byte read".formatted(responseData.length, chunkSize));
+            } else {
+                System.arraycopy(responseData, 0, result, 0, chunkSize);
+                completed = chunkSize;
+                extendedReadConfirmed = true;
             }
-
-            result.write(responseData);
-            currentAddress += chunkSize;
-            remaining -= chunkSize;
         }
-        return result.toByteArray();
+
+        while (completed < size) {
+            completed += readPipeline(address, result, completed, size - completed);
+        }
+        return result;
     }
 
     @Override
@@ -118,6 +129,11 @@ public final class CitraUdpClient implements MemoryClient {
         } catch (IOException | RuntimeException exception) {
             return false;
         }
+    }
+
+    /** Effective read payload after automatic MadaLime/legacy detection. */
+    public synchronized int effectiveMaximumReadSize() {
+        return maximumReadSize;
     }
 
     @Override
@@ -169,6 +185,51 @@ public final class CitraUdpClient implements MemoryClient {
         }
     }
 
+    private int readPipeline(long baseAddress, byte[] destination, int destinationOffset, int remaining)
+            throws IOException {
+        Map<Long, PendingRead> pending = new LinkedHashMap<>();
+        int scheduled = 0;
+        while (scheduled < remaining && pending.size() < READ_PIPELINE_WINDOW) {
+            int chunkSize = Math.min(remaining - scheduled, maximumReadSize);
+            long requestId = nextRequestId();
+            send(CitraPacketCodec.readMemoryRequest(
+                    requestId, baseAddress + destinationOffset + scheduled, chunkSize));
+            pending.put(requestId, new PendingRead(destinationOffset + scheduled, chunkSize));
+            scheduled += chunkSize;
+        }
+
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (!pending.isEmpty()) {
+            long remainingNanos = deadline - System.nanoTime();
+            if (remainingNanos <= 0) throw timeoutException(pending.keySet().iterator().next());
+            socket.setSoTimeout(toTimeoutMillis(remainingNanos));
+            DatagramPacket datagram = new DatagramPacket(new byte[MAX_DATAGRAM_SIZE], MAX_DATAGRAM_SIZE);
+            try {
+                socket.receive(datagram);
+            } catch (SocketTimeoutException exception) {
+                throw timeoutException(pending.keySet().iterator().next());
+            }
+
+            CitraPacket packet;
+            try {
+                packet = CitraPacketCodec.decode(Arrays.copyOf(datagram.getData(), datagram.getLength()));
+            } catch (IllegalArgumentException malformedPacket) {
+                continue;
+            }
+            if (packet.version() != CitraPacketCodec.VERSION
+                    || packet.requestType() != CitraRequestType.READ_MEMORY) continue;
+            PendingRead read = pending.remove(packet.requestId());
+            if (read == null) continue;
+            byte[] data = packet.data();
+            if (data.length != read.length()) {
+                throw new IOException("Citra returned %d bytes for a %d-byte pipelined read"
+                        .formatted(data.length, read.length()));
+            }
+            System.arraycopy(data, 0, destination, read.destinationOffset(), data.length);
+        }
+        return scheduled;
+    }
+
     private long nextRequestId() {
         long requestId = nextRequestId;
         nextRequestId = (nextRequestId + 1) & MAX_UNSIGNED_INT;
@@ -209,5 +270,8 @@ public final class CitraUdpClient implements MemoryClient {
     private static SocketTimeoutException timeoutException(long requestId) {
         return new SocketTimeoutException(
                 "Timed out waiting for Citra response " + Long.toUnsignedString(requestId));
+    }
+
+    private record PendingRead(int destinationOffset, int length) {
     }
 }

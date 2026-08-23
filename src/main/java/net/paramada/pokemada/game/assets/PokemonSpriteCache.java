@@ -1,6 +1,7 @@
 package net.paramada.pokemada.game.assets;
 
 import javafx.scene.image.Image;
+import net.paramada.pokemada.platform.AppDirectories;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public final class PokemonSpriteCache {
             new ConcurrentHashMap<>();
 
     public PokemonSpriteCache() {
-        this(Path.of(System.getProperty("user.home"), ".poke-mada", "cache", "sprites"));
+        this(AppDirectories.cacheDirectory().resolve("sprites"));
     }
 
     PokemonSpriteCache(Path cacheDirectory) {

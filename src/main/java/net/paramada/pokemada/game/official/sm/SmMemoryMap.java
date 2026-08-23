@@ -6,6 +6,7 @@ import net.paramada.pokemada.game.official.shared.memory.TeamOwner;
 import net.paramada.pokemada.game.official.sm.inventory.SmBagPocket;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,6 +22,20 @@ public final class SmMemoryMap {
     public static final int ENEMY_TRAINER_NAME_LENGTH = 26;
     public static final int ENEMY_TRAINER_TITLE_OFFSET = 140;
     public static final int ENEMY_TRAINER_TITLE_LENGTH = 36;
+    public static final long BATTLE_TEXT_PRIMARY_ADDRESS = 0x302e41d4L;
+    /**
+     * Backing buffer for the text box currently being rendered. It can contain a partial message,
+     * so it is retained for research dumps but deliberately excluded from runtime consensus.
+     */
+    public static final long BATTLE_TEXT_RENDER_BOX_ADDRESS = 0x30387bd8L;
+    public static final long BATTLE_TEXT_SECONDARY_ADDRESS = 0x30439a88L;
+    /** All known text regions, including the unstable render-box buffer, for diagnostic dumps. */
+    public static final List<Long> BATTLE_TEXT_MIRROR_ADDRESSES = List.of(
+            BATTLE_TEXT_PRIMARY_ADDRESS, BATTLE_TEXT_RENDER_BOX_ADDRESS, BATTLE_TEXT_SECONDARY_ADDRESS);
+    /** Stable mirrors that must agree before a message is accepted by the battle log. */
+    public static final List<Long> BATTLE_TEXT_CONSENSUS_ADDRESSES = List.of(
+            BATTLE_TEXT_PRIMARY_ADDRESS, BATTLE_TEXT_SECONDARY_ADDRESS);
+    public static final int BATTLE_TEXT_MIRROR_LENGTH = 0x100;
     /** Pokémon Sun/Moon only. Unencrypted runtime MyItem block in guest virtual memory. */
     public static final long BAG_BLOCK_ADDRESS = 0x330d5934L;
     public static final int BAG_BLOCK_LENGTH = 0x0de0;

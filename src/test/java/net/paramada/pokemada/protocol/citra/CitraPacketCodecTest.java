@@ -70,9 +70,10 @@ class CitraPacketCodecTest {
     }
 
     @Test
-    void enforcesLegacyChunkSizes() {
+    void acceptsMadaLimeReadsButPreservesLegacyWriteLimit() {
+        assertEquals(24, CitraPacketCodec.readMemoryRequest(1, 0, 1024).length);
         assertThrows(IllegalArgumentException.class,
-                () -> CitraPacketCodec.readMemoryRequest(1, 0, 33));
+                () -> CitraPacketCodec.readMemoryRequest(1, 0, 1025));
         assertThrows(IllegalArgumentException.class,
                 () -> CitraPacketCodec.writeMemoryRequest(1, 0, new byte[25]));
     }

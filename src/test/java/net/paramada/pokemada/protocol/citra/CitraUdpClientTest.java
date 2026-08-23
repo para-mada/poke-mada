@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CitraUdpClientTest {
     @Test
-    void splitsReadsIntoLegacySizedRequestsAndCombinesResponses() throws Exception {
+    void usesMadaLimeReadPayloadAndCombinesResponses() throws Exception {
         try (DatagramSocket server = loopbackServer()) {
             List<Long> addresses = new ArrayList<>();
             List<Integer> sizes = new ArrayList<>();
             FutureTask<Void> serverTask = runServer(() -> {
-                for (int index = 0; index < 3; index++) {
+                for (int index = 0; index < 2; index++) {
                     ReceivedPacket received = receive(server);
                     CitraPacket request = received.packet();
                     ByteBuffer data = littleEndian(request.data());
@@ -46,16 +46,77 @@ class CitraUdpClientTest {
 
             byte[] result;
             try (CitraUdpClient client = clientFor(server, Duration.ofSeconds(1))) {
-                result = client.readMemory(0x1000, 70);
+                result = client.readMemory(0x1000, 1_050);
             }
             serverTask.get();
 
-            assertEquals(List.of(0x1000L, 0x1020L, 0x1040L), addresses);
-            assertEquals(List.of(32, 32, 6), sizes);
-            byte[] expected = new byte[70];
+            assertEquals(List.of(0x1000L, 0x1400L), addresses);
+            assertEquals(List.of(1_024, 26), sizes);
+            byte[] expected = new byte[1_050];
             for (int index = 0; index < expected.length; index++) {
                 expected[index] = (byte) (0x1000 + index);
             }
+            assertArrayEquals(expected, result);
+        }
+    }
+
+    @Test
+    void fallsBackToLegacyReadPayloadWhenServerRejectsExtendedRead() throws Exception {
+        try (DatagramSocket server = loopbackServer()) {
+            List<Integer> sizes = new ArrayList<>();
+            FutureTask<Void> serverTask = runServer(() -> {
+                for (int index = 0; index < 4; index++) {
+                    ReceivedPacket received = receive(server);
+                    ByteBuffer data = littleEndian(received.packet().data());
+                    long address = Integer.toUnsignedLong(data.getInt());
+                    int size = data.getInt();
+                    sizes.add(size);
+                    byte[] response = index == 0 ? new byte[0] : new byte[size];
+                    for (int offset = 0; offset < response.length; offset++) {
+                        response[offset] = (byte) (address + offset);
+                    }
+                    reply(server, received, CitraPacketCodec.encode(
+                            received.packet().requestId(), CitraRequestType.READ_MEMORY, response));
+                }
+            });
+
+            byte[] result;
+            try (CitraUdpClient client = clientFor(server, Duration.ofSeconds(1))) {
+                result = client.readMemory(0x2000, 70);
+            }
+            serverTask.get();
+
+            assertEquals(List.of(70, 32, 32, 6), sizes);
+            byte[] expected = new byte[70];
+            for (int index = 0; index < expected.length; index++) {
+                expected[index] = (byte) (0x2000 + index);
+            }
+            assertArrayEquals(expected, result);
+        }
+    }
+
+    @Test
+    void pipelinesExtendedReadsAndAcceptsOutOfOrderReplies() throws Exception {
+        try (DatagramSocket server = loopbackServer()) {
+            FutureTask<Void> serverTask = runServer(() -> {
+                ReceivedPacket probe = receive(server);
+                replyWithAddressPattern(server, probe);
+
+                List<ReceivedPacket> pipeline = new ArrayList<>();
+                for (int index = 0; index < 3; index++) pipeline.add(receive(server));
+                for (int index = pipeline.size() - 1; index >= 0; index--) {
+                    replyWithAddressPattern(server, pipeline.get(index));
+                }
+            });
+
+            byte[] result;
+            try (CitraUdpClient client = clientFor(server, Duration.ofSeconds(1))) {
+                result = client.readMemory(0x3000, 4_096);
+            }
+            serverTask.get();
+
+            byte[] expected = new byte[4_096];
+            for (int index = 0; index < expected.length; index++) expected[index] = (byte) (0x3000 + index);
             assertArrayEquals(expected, result);
         }
     }
@@ -151,6 +212,16 @@ class CitraUdpClientTest {
 
     private static void reply(DatagramSocket server, ReceivedPacket request, byte[] response) throws IOException {
         server.send(new DatagramPacket(response, response.length, request.sender()));
+    }
+
+    private static void replyWithAddressPattern(DatagramSocket server, ReceivedPacket request) throws IOException {
+        ByteBuffer data = littleEndian(request.packet().data());
+        long address = Integer.toUnsignedLong(data.getInt());
+        int size = data.getInt();
+        byte[] response = new byte[size];
+        for (int offset = 0; offset < size; offset++) response[offset] = (byte) (address + offset);
+        reply(server, request, CitraPacketCodec.encode(
+                request.packet().requestId(), CitraRequestType.READ_MEMORY, response));
     }
 
     private static ByteBuffer littleEndian(byte[] data) {

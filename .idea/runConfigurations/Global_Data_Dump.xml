@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Global Data Dump (1 GiB)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="net.paramada.pokemada.tools.dump.DataDumper" />
+    <module name="PokeMada" />
+    <option name="PROGRAM_PARAMETERS" value="--global" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
