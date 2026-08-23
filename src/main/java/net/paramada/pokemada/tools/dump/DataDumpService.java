@@ -62,7 +62,7 @@ public final class DataDumpService {
                 .append("  \"readOnly\": true,\n")
                 .append("  \"addressSpace\": ")
                 .append(jsonString(MemoryAddressSpace.NINTENDO_3DS_GUEST_VIRTUAL.name())).append(",\n")
-                .append("  \"transport\": \"Citra/Lime3DS UDP RPC v1\",\n")
+                .append("  \"transport\": \"MadaLime UDP RPC v1\",\n")
                 .append("  \"preferredReadPayload\": ").append(CitraPacketCodec.MAX_READ_SIZE).append(",\n")
                 .append("  \"legacyReadFallback\": ").append(CitraPacketCodec.LEGACY_MAX_READ_SIZE).append(",\n")
                 .append("  \"regions\": [\n");

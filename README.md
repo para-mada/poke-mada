@@ -2,7 +2,7 @@
   <img src="src/main/resources/net/paramada/pokemada/assets/master-v-wordmark.png" alt="Master V Tournament" width="430">
 </p>
 
-# PokeMada
+# Master V Tournament
 
 Aplicación de escritorio para acompañar partidas y torneos de Pokémon mediante información leída
 en vivo desde un emulador compatible. Esta es la reescritura en **Java 21 + JavaFX** de la
@@ -17,7 +17,7 @@ en desarrollo; las secciones que todavía son conceptuales se identifican claram
 
 | Área | Estado | Descripción |
 | --- | --- | --- |
-| Conexión con MadaLime/Citra | Funcional | Transporte UDP con direcciones virtuales guest de Nintendo 3DS; las lecturas son la norma y Poke Vial es la escritura explícita aislada. |
+| Conexión con MadaLime | Funcional | Transporte UDP con direcciones virtuales guest de Nintendo 3DS; las lecturas son la norma y Poke Vial es la escritura explícita aislada. |
 | Pokémon Sun/Moon | Funcional | Perfil de memoria independiente para equipo, combate, textos y mochila. |
 | LIVE | Funcional | Equipo del jugador, combate activo, sprites, PS y acceso al detalle. |
 | Poke Vial | Funcional | Cura el equipo desde LIVE, consume cargas persistentes y se recarga tras una curación completa fuera de combate. |
@@ -46,7 +46,7 @@ en desarrollo; las secciones que todavía son conceptuales se identifican claram
 - **Comodines:** inventario futuro de cartas/comodines.
 - **Buzón:** recompensas y mensajes futuros.
 - **Ruletas:** portal de invocaciones del torneo.
-- **Estado del emulador:** el logo de MadaLime recupera color al conectarse. La conexión se muestra
+- **Estado de MadaLime:** el avatar pixel-art recupera color al conectarse. La conexión se muestra
   aquí, sin repetir indicadores en cada pantalla.
 
 ### LIVE
@@ -157,8 +157,8 @@ JavaFX / FXML
     ├── Perfiles oficiales por juego
     │   └── Pokémon Sun/Moon
     ├── Decodificadores independientes del transporte
-    └── CitraUdpClient
-        └── UDP RPC de MadaLime/Citra
+    └── CitraUdpClient (compatibilidad interna del protocolo)
+        └── UDP RPC de MadaLime
 ```
 
 Principios del proyecto:
@@ -174,13 +174,13 @@ Principios del proyecto:
 - Windows 10/11;
 - JDK 21;
 - Maven Wrapper incluido;
-- MadaLime/Citra compatible escuchando en UDP `localhost:45987` para datos en vivo.
+- MadaLime escuchando en UDP `localhost:45987` para datos en vivo.
 
 ### Ejecutar desde IntelliJ
 
 El repositorio incluye configuraciones compartidas:
 
-- `PokeMada` — aplicación JavaFX;
+- `Master V Tournament` — aplicación JavaFX;
 - `Data Dumper` — regiones conocidas de Sun/Moon;
 - `Global Data Dump` — imagen lógica dispersa de 1 GiB;
 - `Build Windows Installer` — instalador bajo demanda.
@@ -212,10 +212,10 @@ El instalador incluye un runtime reducido de Java 21; el usuario final no necesi
 Resultado:
 
 ```text
-target\installer\PokeMada-1.0.0.exe
+target\installer\MasterVTournament-1.0.0.exe
 ```
 
-La distribución contiene `PokeMada.exe` y `PokeMadaDataDumper.exe`. Consulta
+La distribución contiene `MasterVTournament.exe` y `MasterVTournamentDataDumper.exe`. Consulta
 [packaging/windows/README.md](packaging/windows/README.md) para opciones de `jpackage`, WiX y
 actualizaciones.
 
@@ -277,5 +277,5 @@ Consulta [tools/data-dumper/README.md](tools/data-dumper/README.md) para paráme
 - [PokeAPI sprites](https://github.com/PokeAPI/sprites) — sprites 2D y objetos almacenados en caché.
 - [MadaLime / Lime3DS](https://github.com/Lime3DS/Lime3DS) — base del emulador y transporte de memoria.
 
-PokeMada es una herramienta comunitaria no afiliada ni respaldada por Nintendo, Game Freak o The
+Master V Tournament es una herramienta comunitaria no afiliada ni respaldada por Nintendo, Game Freak o The
 Pokémon Company. Pokémon y sus marcas pertenecen a sus respectivos propietarios.

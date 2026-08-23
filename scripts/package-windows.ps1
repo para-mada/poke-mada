@@ -26,7 +26,7 @@ $outputDirectory = Join-Path $targetDirectory 'installer'
 $buildToolsDirectory = Join-Path $targetDirectory 'build-tools'
 $portableWixDirectory = Join-Path $buildToolsDirectory 'wix314'
 $iconPng = Join-Path $projectDirectory 'src\main\resources\net\paramada\pokemada\assets\master-v-emblem.png'
-$iconIco = Join-Path $packagingDirectory 'PokeMada.ico'
+$iconIco = Join-Path $packagingDirectory 'MasterVTournament.ico'
 $dataDumperLauncher = Join-Path $projectDirectory 'packaging\windows\data-dumper.properties'
 
 function Test-Jdk21([string]$jdkCandidate) {
@@ -157,23 +157,23 @@ try {
 
     $arguments = @(
         '--type', $Type,
-        '--name', 'PokeMada',
+        '--name', 'MasterVTournament',
         '--app-version', $Version,
         '--dest', $outputDirectory,
         '--runtime-image', $runtimeDirectory,
         '--module', 'net.paramada.pokemada/net.paramada.pokemada.Launcher',
-        '--add-launcher', "PokeMadaDataDumper=$dataDumperLauncher",
+        '--add-launcher', "MasterVTournamentDataDumper=$dataDumperLauncher",
         '--icon', $iconIco,
-        '--vendor', 'Poke Mada',
-        '--description', 'Herramientas en vivo para Pokémon Sun y Moon'
+        '--vendor', 'ParaMada',
+        '--description', 'Aplicación oficial de Master V Tournament para Pokémon Sun y Moon'
     )
 
     if ($Type -eq 'exe') {
         $arguments += @(
             '--win-per-user-install',
-            '--install-dir', 'PokeMada',
+            '--install-dir', 'Master V Tournament',
             '--win-menu',
-            '--win-menu-group', 'PokeMada',
+            '--win-menu-group', 'Master V Tournament',
             '--win-shortcut',
             '--win-upgrade-uuid', '8f287807-622a-4ba6-ae82-5c240568807e'
         )

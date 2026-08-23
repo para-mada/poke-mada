@@ -69,11 +69,12 @@
                     <padding><Insets bottom="14.0" left="16.0" right="14.0" top="10.0"/></padding>
                     <Separator styleClass="sidebar-separator"/>
                     <HBox fx:id="emulatorConnectionRow" alignment="CENTER_LEFT" spacing="12.0" styleClass="connection-row">
-                        <ImageView fx:id="emulatorConnectionIcon" fitHeight="36.0" fitWidth="36.0" preserveRatio="true">
-                            <image><Image url="@assets/lime_logo_off.png"/></image>
+                        <ImageView fx:id="emulatorConnectionIcon" fitHeight="44.0" fitWidth="44.0"
+                                   preserveRatio="true" smooth="false">
+                            <image><Image url="@assets/madalime_off.png"/></image>
                         </ImageView>
                         <VBox HBox.hgrow="ALWAYS">
-                            <Label text="EMULADOR" styleClass="footer-title"/>
+                            <Label text="MADALIME" styleClass="footer-title"/>
                             <Label fx:id="emulatorConnectionStatus" text="Desconectado" styleClass="footer-subtitle"/>
                         </VBox>
                         <Button mnemonicParsing="false" text="↻" onAction="#refreshLiveData" styleClass="retry-button"/>
@@ -109,7 +110,7 @@
                                     </ImageView>
                                 </StackPane>
                                 <VBox spacing="14.0" styleClass="card-body" VBox.vgrow="ALWAYS">
-                                    <Label text="¡Bienvenido a Poke Mada!" styleClass="news-heading"/>
+                                    <Label text="¡Bienvenido a Master V!" styleClass="news-heading"/>
                                     <Label text="La nueva aplicación Java está lista para comenzar la integración con el emulador."
                                            wrapText="true" styleClass="body-text"/>
                                     <Separator/>

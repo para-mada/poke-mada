@@ -66,7 +66,7 @@ public final class DataDumper {
 
     private static void printUsage() {
         System.out.println("""
-                PokeMada Data Dumper (solo lectura)
+                Master V Data Dumper (solo lectura)
 
                 Uso:
                   DataDumper [--global] [--host HOST] [--port PORT] [--timeout SEGUNDOS] [--output DIRECTORIO]

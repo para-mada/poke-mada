@@ -277,8 +277,8 @@ public final class MainController {
     private final PokemonItemSpriteCache itemSpriteCache = new PokemonItemSpriteCache();
     private final Image missingNoSprite = bundledImage("missingno.png");
     private final Image pokeballSprite = bundledImage("enemy-team-pokeball.png");
-    private final Image emulatorConnectedIcon = bundledImage("lime_logo.png");
-    private final Image emulatorDisconnectedIcon = bundledImage("lime_logo_off.png");
+    private final Image emulatorConnectedIcon = bundledImage("madalime.png");
+    private final Image emulatorDisconnectedIcon = bundledImage("madalime_off.png");
     private Timeline liveRefreshTimeline;
     private Timeline battleTextTimeline;
     private volatile boolean battleActive;

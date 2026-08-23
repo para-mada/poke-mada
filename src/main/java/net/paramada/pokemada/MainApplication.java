@@ -22,7 +22,7 @@ public final class MainApplication extends Application {
         scene.getStylesheets().add(Objects.requireNonNull(
                 MainApplication.class.getResource("styles/main.css")).toExternalForm());
 
-        stage.setTitle("Poke Mada");
+        stage.setTitle("Master V Tournament");
         stage.getIcons().add(new Image(Objects.requireNonNull(
                 MainApplication.class.getResourceAsStream("assets/master-v-emblem.png"))));
         stage.setMinWidth(960);
