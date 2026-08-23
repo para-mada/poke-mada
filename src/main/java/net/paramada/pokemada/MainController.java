@@ -281,6 +281,11 @@ public final class MainController {
     private final Image emulatorDisconnectedIcon = bundledImage("madalime_off.png");
     private Timeline liveRefreshTimeline;
     private Timeline battleTextTimeline;
+    private static final long GAME_PROBE_INTERVAL_NANOS = 3_000_000_000L;
+    private static final long GAME_WARMUP_NANOS = 2_000_000_000L;
+    private volatile boolean liveSessionReady;
+    private volatile long nextGameProbeNanos;
+    private volatile long gameWarmupUntilNanos;
     private volatile boolean battleActive;
     private volatile boolean singleBattleActive;
     private Label[] partyNames;
@@ -443,6 +448,19 @@ public final class MainController {
     @FXML
     private void refreshLiveData() {
         if (usingPokeVial.get()) return;
+        long now = System.nanoTime();
+        boolean probingForGame = !liveSessionReady;
+        if (probingForGame) {
+            if (gameWarmupUntilNanos != 0) {
+                if (now < gameWarmupUntilNanos) return;
+                liveSessionReady = true;
+                gameWarmupUntilNanos = 0;
+                probingForGame = false;
+            } else {
+                if (now < nextGameProbeNanos) return;
+                nextGameProbeNanos = now + GAME_PROBE_INTERVAL_NANOS;
+            }
+        }
         if (!refreshingLiveData.compareAndSet(false, true)) {
             return;
         }
@@ -451,25 +469,52 @@ public final class MainController {
             refreshingLiveData.set(false);
             return;
         }
-        if (!emulatorConnectionRow.getStyleClass().contains("connected")) {
+        if (!probingForGame && !emulatorConnectionRow.getStyleClass().contains("connected")) {
             setConnectionState("Sincronizando…", null);
         }
+        boolean gameProbe = probingForGame;
         Thread.startVirtualThread(() -> {
-            try (CitraUdpClient client = new CitraUdpClient()) {
+            try (CitraUdpClient client = gameProbe
+                    ? new CitraUdpClient("localhost", CitraUdpClient.DEFAULT_PORT,
+                    java.time.Duration.ofMillis(300))
+                    : new CitraUdpClient()) {
+                if (gameProbe) {
+                    // MadaLime creates the RPC endpoint as the emulated title starts. A single-byte
+                    // probe detects that transition without starting all party/battle readers while
+                    // the ROM is still being initialized.
+                    client.readMemory(SmMemoryMap.INSTANCE.party().address(), 1);
+                    Platform.runLater(() -> {
+                        gameWarmupUntilNanos = System.nanoTime() + GAME_WARMUP_NANOS;
+                        setConnectionState("Juego detectado…", null);
+                    });
+                    return;
+                }
                 PartySnapshot[] party = readParty(client);
                 ActiveSnapshot active = readActivePokemon(client);
                 BattleSnapshot battle = readBattle(client, active);
                 Platform.runLater(() -> renderLiveData(party, active, battle));
             } catch (Exception exception) {
                 Platform.runLater(() -> {
-                    setConnectionState("No responde", "error");
-                    teamSummaryLabel.setText("No se pudo actualizar");
-                    combatLogLabel.setText(exception.getMessage());
+                    liveSessionReady = false;
+                    gameWarmupUntilNanos = 0;
+                    nextGameProbeNanos = System.nanoTime() + GAME_PROBE_INTERVAL_NANOS;
+                    setConnectionState("Esperando un juego", null);
+                    markGameUnavailable();
                 });
             } finally {
                 refreshingLiveData.set(false);
             }
         });
+    }
+
+    private void markGameUnavailable() {
+        updateBattleLogState(false, false, "");
+        updateBattleCardInteraction(false);
+        battleModeLabel.setText("Fuera de combate");
+        battleSummaryMessage.setText("Abre un juego en MadaLime");
+        if (combatDetailView.isVisible()) {
+            closeCombatDetails();
+        }
     }
 
     private void pollBattleText() {
