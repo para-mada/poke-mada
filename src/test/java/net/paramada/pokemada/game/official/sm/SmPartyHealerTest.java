@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SmPartyHealerTest {
@@ -46,6 +47,18 @@ final class SmPartyHealerTest {
         assertEquals(0, memory.writeCount);
     }
 
+    @Test
+    void reportsWhenTheTransportSilentlyDiscardsWrites() {
+        FakeMemory memory = new FakeMemory();
+        memory.discardWrites = true;
+        memory.putPartySlot(0, pokemon(722, 7, 23, 33, 5, 2));
+        for (int slot = 1; slot < 6; slot++) memory.putPartySlot(slot, pokemon(0, 0, 0, 0, 0, 0));
+
+        IOException error = assertThrows(IOException.class, () -> new SmPartyHealer().heal(memory));
+
+        assertTrue(error.getMessage().contains("descartó la escritura"));
+    }
+
     private static byte[] pokemon(int species, int hp, int maxHp, int move, int pp, int ppUps) {
         byte[] decrypted = new byte[254];
         ByteBuffer data = ByteBuffer.wrap(decrypted).order(ByteOrder.LITTLE_ENDIAN);
@@ -72,6 +85,7 @@ final class SmPartyHealerTest {
     private static final class FakeMemory implements MemoryClient {
         private final Map<Long, byte[]> regions = new HashMap<>();
         private int writeCount;
+        private boolean discardWrites;
 
         private void putPartySlot(int slot, byte[] decrypted) {
             var layout = SmMemoryMap.INSTANCE.party();
@@ -99,8 +113,8 @@ final class SmPartyHealerTest {
         }
 
         @Override public void writeMemory(long address, byte[] data) {
-            regions.put(address, data.clone());
             writeCount++;
+            if (!discardWrites) regions.put(address, data.clone());
         }
 
         @Override public boolean testConnection() { return true; }

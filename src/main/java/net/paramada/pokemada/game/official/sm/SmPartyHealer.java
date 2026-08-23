@@ -57,11 +57,21 @@ public final class SmPartyHealer {
         }
         if (occupied == 0) throw new IOException("No hay Pokémon válidos en el equipo");
         for (PreparedSlot slot : changed) {
-            memory.writeMemory(slot.address(), java.util.Arrays.copyOf(slot.encrypted(), slot.storedSize()));
-            memory.writeMemory(slot.address() + slot.statsOffset(), java.util.Arrays.copyOfRange(
-                    slot.encrypted(), slot.storedSize(), slot.storedSize() + slot.statsSize()));
+            byte[] stored = java.util.Arrays.copyOf(slot.encrypted(), slot.storedSize());
+            byte[] stats = java.util.Arrays.copyOfRange(
+                    slot.encrypted(), slot.storedSize(), slot.storedSize() + slot.statsSize());
+            writeAndVerify(memory, slot.address(), stored);
+            writeAndVerify(memory, slot.address() + slot.statsOffset(), stats);
         }
         return new HealResult(occupied, changed.size());
+    }
+
+    private static void writeAndVerify(MemoryClient memory, long address, byte[] expected) throws IOException {
+        memory.writeMemory(address, expected);
+        byte[] actual = memory.readMemory(address, expected.length);
+        if (!java.util.Arrays.equals(expected, actual)) {
+            throw new IOException("MadaLime descartó la escritura en 0x%08X".formatted(address));
+        }
     }
 
     public static int maxPp(int moveId, int ppUps) {
