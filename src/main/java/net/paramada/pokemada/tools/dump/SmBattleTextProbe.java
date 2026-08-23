@@ -26,9 +26,9 @@ public final class SmBattleTextProbe {
                 System.out.printf("  limpio: %s%n", printable(BattleMessageSanitizer.sanitize(decoded)));
                 System.out.printf("  bytes:  %s%n", HexFormat.ofDelimiter(" ").formatHex(Arrays.copyOf(raw, 32)));
             }
-            String consensus = new SmBattleTextReader(client).read().message();
-            System.out.printf("CONSENSO: %s%n", consensus.isBlank() ? "<sin consenso 2-de-3>" : printable(consensus));
-            System.out.printf("LIMPIO:   %s%n", printable(BattleMessageSanitizer.sanitize(consensus)));
+            String selected = new SmBattleTextReader(client).read().message();
+            System.out.printf("SELECCIONADO: %s%n", selected.isBlank() ? "<sin texto utilizable>" : printable(selected));
+            System.out.printf("LIMPIO:       %s%n", printable(BattleMessageSanitizer.sanitize(selected)));
             System.out.printf("COINCIDEN: %s%n", values.stream().distinct().count() == 1
                     ? "3/3" : "no (" + values.stream().distinct().count() + " valores)");
         }
@@ -39,7 +39,8 @@ public final class SmBattleTextProbe {
     }
 
     private static String role(long address) {
-        return address == SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS
-                ? "render-box, excluida" : "estable, consenso";
+        if (address == SmMemoryMap.BATTLE_TEXT_PRIMARY_ADDRESS) return "primaria, prioritaria";
+        if (address == SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS) return "render-box, excluida";
+        return "secundaria, respaldo";
     }
 }

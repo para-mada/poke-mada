@@ -16,10 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SmMemoryMapTest {
     @Test
-    void battleTextConsensusExcludesUnstableRenderBox() {
-        assertEquals(2, SmMemoryMap.BATTLE_TEXT_CONSENSUS_ADDRESSES.size());
-        assertFalse(SmMemoryMap.BATTLE_TEXT_CONSENSUS_ADDRESSES
+    void battleTextRuntimeCandidatesExcludeUnstableRenderBox() {
+        assertEquals(2, SmMemoryMap.BATTLE_TEXT_RUNTIME_ADDRESSES.size());
+        assertFalse(SmMemoryMap.BATTLE_TEXT_RUNTIME_ADDRESSES
                 .contains(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS));
+        assertEquals(SmMemoryMap.BATTLE_TEXT_PRIMARY_ADDRESS,
+                SmMemoryMap.BATTLE_TEXT_RUNTIME_ADDRESSES.getFirst());
         assertEquals(3, SmMemoryMap.BATTLE_TEXT_MIRROR_ADDRESSES.size());
     }
 

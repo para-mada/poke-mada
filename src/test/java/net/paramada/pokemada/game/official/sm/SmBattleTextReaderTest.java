@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SmBattleTextReaderTest {
     @Test
-    void acceptsMatchingStableMirrorsAndIgnoresRenderBoxBuffer() throws Exception {
+    void acceptsPrimaryAndIgnoresRenderBoxBuffer() throws Exception {
         Map<Long, byte[]> contents = new HashMap<>();
         contents.put(SmMemoryMap.BATTLE_TEXT_PRIMARY_ADDRESS, text("¡Es supereficaz!"));
         contents.put(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS, text("¡Es superefi"));
@@ -25,7 +25,7 @@ class SmBattleTextReaderTest {
     }
 
     @Test
-    void returnsNoMessageWhenStableMirrorsDoNotReachConsensus() throws Exception {
+    void prioritizesPrimaryWhenSecondaryDisagrees() throws Exception {
         Map<Long, byte[]> contents = new HashMap<>();
         contents.put(SmMemoryMap.BATTLE_TEXT_PRIMARY_ADDRESS, text("mensaje uno"));
         contents.put(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS, text("mensaje uno"));
@@ -33,7 +33,20 @@ class SmBattleTextReaderTest {
 
         SmBattleTextReader.BattleTextSnapshot snapshot = new SmBattleTextReader(new FakeMemory(contents)).read();
 
-        assertEquals("", snapshot.message());
+        assertEquals("mensaje uno", snapshot.message());
+    }
+
+    @Test
+    void fallsBackToSecondaryWhenPrimaryDoesNotContainUsableText() throws Exception {
+        Map<Long, byte[]> contents = new HashMap<>();
+        contents.put(SmMemoryMap.BATTLE_TEXT_PRIMARY_ADDRESS, text("\u0010\u0002?"));
+        contents.put(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS, text("texto visible que no debe usarse"));
+        contents.put(SmMemoryMap.BATTLE_TEXT_SECONDARY_ADDRESS, text("Pikachu ha usado Impactrueno."));
+
+        SmBattleTextReader.BattleTextSnapshot snapshot = new SmBattleTextReader(new FakeMemory(contents)).read();
+
+        assertEquals("Pikachu ha usado Impactrueno.", snapshot.message());
+        assertEquals(false, snapshot.mirrors().containsKey(SmMemoryMap.BATTLE_TEXT_RENDER_BOX_ADDRESS));
     }
 
     private static byte[] text(String value) {

@@ -32,8 +32,8 @@ public final class SmMemoryMap {
     /** All known text regions, including the unstable render-box buffer, for diagnostic dumps. */
     public static final List<Long> BATTLE_TEXT_MIRROR_ADDRESSES = List.of(
             BATTLE_TEXT_PRIMARY_ADDRESS, BATTLE_TEXT_RENDER_BOX_ADDRESS, BATTLE_TEXT_SECONDARY_ADDRESS);
-    /** Stable mirrors that must agree before a message is accepted by the battle log. */
-    public static final List<Long> BATTLE_TEXT_CONSENSUS_ADDRESSES = List.of(
+    /** Runtime candidates in priority order. The render-box buffer is deliberately excluded. */
+    public static final List<Long> BATTLE_TEXT_RUNTIME_ADDRESSES = List.of(
             BATTLE_TEXT_PRIMARY_ADDRESS, BATTLE_TEXT_SECONDARY_ADDRESS);
     public static final int BATTLE_TEXT_MIRROR_LENGTH = 0x100;
     /** Pokémon Sun/Moon only. Unencrypted runtime MyItem block in guest virtual memory. */
