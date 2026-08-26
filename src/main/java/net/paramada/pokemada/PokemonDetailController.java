@@ -54,13 +54,20 @@ public final class PokemonDetailController {
 
     public void show(int species, String nickname, int level, int natureId, int abilityId, int itemId,
                      int[] realStats, int[] moveIds) {
+        show(species, nickname, level,
+                natureId >= 0 && natureId < NATURES.length ? NATURES[natureId] : "#" + natureId,
+                abilityId, itemId, realStats, moveIds);
+    }
+
+    public void show(int species, String nickname, int level, String natureName, int abilityId, int itemId,
+                     int[] realStats, int[] moveIds) {
         renderedSpecies = species;
         root.setManaged(true);
         root.setVisible(true);
         javafx.application.Platform.runLater(root::requestFocus);
         name.setText(nickname == null || nickname.isBlank() ? speciesName(species) : nickname);
         meta.setText("#%04d  ·  %s  ·  Nv. %d".formatted(species, speciesName(species), level));
-        nature.setText("Naturaleza: " + (natureId >= 0 && natureId < NATURES.length ? NATURES[natureId] : "#" + natureId));
+        nature.setText("Naturaleza: " + (natureName == null || natureName.isBlank() ? "Desconocida" : natureName));
         PokemonAbilityDex.find(abilityId).ifPresentOrElse(value -> {
             ability.setText("Habilidad: " + value.name());
             abilityTooltip.setText(value.name() + "\n\n" + value.description());

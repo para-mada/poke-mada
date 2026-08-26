@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:id="doubleCombatPanel" fitToWidth="true" hbarPolicy="NEVER"
+            styleClass="content-scroll" fx:controller="net.paramada.pokemada.DoubleCombatPanelController">
+    <content>
+        <VBox fx:id="doubleCombatContent" maxWidth="Infinity" spacing="18" styleClass="content, combat-detail-content">
+            <padding><Insets bottom="44" left="30" right="30" top="28"/></padding>
+            <HBox alignment="CENTER_LEFT"><Button text="‹ VOLVER A LIVE" onAction="#close" styleClass="detail-back-button"/></HBox>
+            <HBox maxWidth="Infinity" spacing="24">
+                <VBox fx:id="enemy0Card" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-pokemon-detail">
+                    <StackPane styleClass="detail-team-header, enemy-header"><Label text="Pokémon Enemigo" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" maxWidth="Infinity" spacing="18" styleClass="detail-card-body">
+                        <VBox alignment="CENTER" spacing="5"><ImageView fx:id="enemy0Sprite" fitHeight="95" fitWidth="105" preserveRatio="true"/><HBox fx:id="enemy0Types" alignment="CENTER" spacing="5"/></VBox>
+                        <VBox alignment="CENTER_LEFT" prefWidth="150" spacing="7"><Label fx:id="enemy0Name" styleClass="detail-pokemon-name"/><Label fx:id="enemy0Meta" styleClass="detail-pokemon-meta"/><Label fx:id="enemy0Status" styleClass="status-badge"/></VBox>
+                        <VBox fx:id="enemy0Stats" minWidth="180" spacing="5" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+                <VBox fx:id="enemy1Card" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-pokemon-detail">
+                    <StackPane styleClass="detail-team-header, enemy-header"><Label text="Pokémon Enemigo" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" maxWidth="Infinity" spacing="18" styleClass="detail-card-body">
+                        <VBox alignment="CENTER" spacing="5"><ImageView fx:id="enemy1Sprite" fitHeight="95" fitWidth="105" preserveRatio="true"/><HBox fx:id="enemy1Types" alignment="CENTER" spacing="5"/></VBox>
+                        <VBox alignment="CENTER_LEFT" prefWidth="150" spacing="7"><Label fx:id="enemy1Name" styleClass="detail-pokemon-name"/><Label fx:id="enemy1Meta" styleClass="detail-pokemon-meta"/><Label fx:id="enemy1Status" styleClass="status-badge"/></VBox>
+                        <VBox fx:id="enemy1Stats" minWidth="180" spacing="5" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+            <HBox maxWidth="Infinity" spacing="24">
+                <VBox fx:id="player0Card" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-pokemon-detail">
+                    <StackPane styleClass="detail-team-header, player-header"><Label fx:id="player1HeaderTitle" text="Tu Pokémon" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" maxWidth="Infinity" spacing="18" styleClass="detail-card-body">
+                        <VBox alignment="CENTER" spacing="5"><ImageView fx:id="player0Sprite" fitHeight="95" fitWidth="105" preserveRatio="true"/><HBox fx:id="player0Types" alignment="CENTER" spacing="5"/></VBox>
+                        <VBox alignment="CENTER_LEFT" prefWidth="150" spacing="7"><Label fx:id="player0Name" styleClass="detail-pokemon-name"/><Label fx:id="player0Meta" styleClass="detail-pokemon-meta"/><Label fx:id="player0Status" styleClass="status-badge"/><Label fx:id="player0Ability" wrapText="true" styleClass="detail-data-chip"/><Label fx:id="player0Item" wrapText="true" styleClass="detail-data-chip"/></VBox>
+                        <VBox fx:id="player0Stats" minWidth="180" spacing="5" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <VBox spacing="7" styleClass="detail-moves-area"><Label text="MOVIMIENTOS" styleClass="detail-section-title"/><GridPane fx:id="player0Moves" hgap="8" vgap="8"/></VBox>
+                </VBox>
+                <VBox fx:id="player1Card" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-pokemon-detail">
+                    <StackPane styleClass="detail-team-header, player-header"><Label text="Tu Pokémon" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" maxWidth="Infinity" spacing="18" styleClass="detail-card-body">
+                        <VBox alignment="CENTER" spacing="5"><ImageView fx:id="player1Sprite" fitHeight="95" fitWidth="105" preserveRatio="true"/><HBox fx:id="player1Types" alignment="CENTER" spacing="5"/></VBox>
+                        <VBox alignment="CENTER_LEFT" prefWidth="150" spacing="7"><Label fx:id="player1Name" styleClass="detail-pokemon-name"/><Label fx:id="player1Meta" styleClass="detail-pokemon-meta"/><Label fx:id="player1Status" styleClass="status-badge"/><Label fx:id="player1Ability" wrapText="true" styleClass="detail-data-chip"/><Label fx:id="player1Item" wrapText="true" styleClass="detail-data-chip"/></VBox>
+                        <VBox fx:id="player1Stats" minWidth="180" spacing="5" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    <VBox fx:id="player1MovesArea" spacing="7" styleClass="detail-moves-area"><Label text="MOVIMIENTOS" styleClass="detail-section-title"/><GridPane fx:id="player1Moves" hgap="8" vgap="8"/></VBox>
+                </VBox>
+            </HBox>
+            <HBox alignment="CENTER" maxWidth="Infinity" spacing="24">
+                <VBox fx:id="playerTeamCard" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-team-card"><StackPane styleClass="detail-team-header, player-header"><Label text="Tu Equipo" styleClass="detail-header-title"/></StackPane><GridPane fx:id="playerTeam" alignment="CENTER" hgap="18" vgap="10" styleClass="detail-roster"/></VBox>
+                <Button minWidth="230" text="L O G  D E  B A T A L L A   ⚔" onAction="#openLog" styleClass="battle-log-button"/>
+                <VBox fx:id="enemyTeamCard" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="combat-team-card"><StackPane styleClass="detail-team-header, enemy-header"><Label text="Equipo Enemigo" styleClass="detail-header-title"/></StackPane><GridPane fx:id="enemyTeam" alignment="CENTER" hgap="18" vgap="10" styleClass="detail-roster"/></VBox>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

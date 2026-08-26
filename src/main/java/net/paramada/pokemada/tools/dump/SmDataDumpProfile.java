@@ -17,7 +17,7 @@ public final class SmDataDumpProfile {
         var party = map.party();
         var combat = map.battle(net.paramada.pokemada.game.official.shared.memory.BattleEnvironment.WILD)
                 .combat();
-        int battleLength = 17 * combat.pokemonStride() + combat.pokemonDataSize();
+        int battleLength = 23 * combat.pokemonStride() + combat.pokemonDataSize();
 
         List<MemoryDumpRegion> regions = new ArrayList<>();
         regions.add(new MemoryDumpRegion("party-index", SmMemoryMap.PARTY_INDEX_ADDRESS, 1));

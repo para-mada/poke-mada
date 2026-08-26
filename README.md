@@ -265,6 +265,8 @@ Consulta [tools/data-dumper/README.md](tools/data-dumper/README.md) para paráme
 
 ### Fuera de alcance por ahora
 
+- resolución de identidad durante Ilusión, Impostor o Transformación; consulta
+  [la bitácora de limitaciones](docs/battle-identity-limitations.md);
 - escritura en RAM desde las herramientas de lectura;
 - MemeCrypto, firma o modificación de guardados;
 - reutilizar direcciones de Sun/Moon en otras versiones;

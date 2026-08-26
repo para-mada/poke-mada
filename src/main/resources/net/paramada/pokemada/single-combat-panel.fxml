@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.*?>
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fitToWidth="true" hbarPolicy="NEVER"
-            styleClass="content-scroll">
+            styleClass="content-scroll" fx:id="singleCombatPanel"
+            fx:controller="net.paramada.pokemada.SingleCombatPanelController">
     <content>
         <VBox spacing="20.0" styleClass="content, combat-detail-content">
             <padding><Insets bottom="44.0" left="36.0" right="36.0" top="28.0"/></padding>

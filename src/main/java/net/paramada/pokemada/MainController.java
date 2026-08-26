@@ -5,11 +5,13 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -17,6 +19,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.AudioClip;
+import javafx.scene.shape.Circle;
+import javafx.geometry.Insets;
 import javafx.util.Duration;
 import net.paramada.pokemada.battlelog.BattleLogEvent;
 import net.paramada.pokemada.battlelog.BattleLogManager;
@@ -24,18 +29,18 @@ import net.paramada.pokemada.battlelog.BattleLogSession;
 import net.paramada.pokemada.battlelog.BattleLogStore;
 import net.paramada.pokemada.features.vial.PokeVial;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;
-import net.paramada.pokemada.game.assets.PokemonBaseStats;
-import net.paramada.pokemada.game.assets.PokemonMoveDex;
-import net.paramada.pokemada.game.assets.MoveEffectiveness;
-import net.paramada.pokemada.game.assets.PokemonAbilityDex;
-import net.paramada.pokemada.game.assets.PokemonItemDex;
-import net.paramada.pokemada.game.assets.PokemonItemSpriteCache;
 import net.paramada.pokemada.game.assets.PokemonSpeciesDex;
+import net.paramada.pokemada.game.PokemonGameConfig;
+import net.paramada.pokemada.game.save.SaveFileWatcher;
 import net.paramada.pokemada.game.official.shared.crypto.PokemonCrypto;
 import net.paramada.pokemada.game.official.sm.SmBattleTextReader;
 import net.paramada.pokemada.game.official.sm.SmMemoryMap;
 import net.paramada.pokemada.game.official.sm.SmPartyHealer;
+import net.paramada.pokemada.game.save.SmSaveEditor;
 import net.paramada.pokemada.protocol.citra.CitraUdpClient;
+import net.paramada.pokemada.server.NotificationConnection;
+import net.paramada.pokemada.server.ServerClient;
+import net.paramada.pokemada.server.ServerSettings;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -45,18 +50,36 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MainController {
     private static final System.Logger LOGGER = System.getLogger(MainController.class.getName());
+    private static final PokemonGameConfig GAME_CONFIG = PokemonGameConfig.pokemonMoon();
     private static final String[] STAT_TIER_CLASSES = {
             "stat-tier-very-low", "stat-tier-low", "stat-tier-medium", "stat-tier-high",
             "stat-tier-very-high", "stat-tier-exceptional", "stat-tier-extreme"
     };
+
+    @FXML private VBox sidebar;
+    @FXML private VBox sidebarFooter;
+    @FXML private VBox navigation;
+    @FXML private ToggleGroup navigationGroup;
+    @FXML private ToggleButton homeNavigationButton;
+    @FXML private ImageView sidebarWordmark;
+    @FXML private ImageView sidebarAppIcon;
+    @FXML private Button sidebarCollapseButton;
+    @FXML private VBox emulatorConnectionDetails;
+    @FXML private Button emulatorRetryButton;
+    @FXML private VBox trainerDetails;
+    @FXML private Button logoutButton;
 
     @FXML
     private ScrollPane homeView;
@@ -64,15 +87,34 @@ public final class MainController {
     private ScrollPane liveView;
     @FXML
     private ScrollPane combatDetailView;
+    @FXML private ScrollPane doubleCombatDetailView;
+    @FXML private ScrollPane sosCombatDetailView;
+    @FXML private ScrollPane battleRoyaleCombatDetailView;
+    @FXML private StackPane allyCombatDetailView;
+    @FXML
+    private SingleCombatPanelController combatDetailViewController;
+    @FXML private DoubleCombatPanelController doubleCombatDetailViewController;
+    @FXML private SOSCombatPanelController sosCombatDetailViewController;
+    @FXML private BattleRoyaleCombatPanelController battleRoyaleCombatDetailViewController;
+    @FXML private AllyCombatPanelController allyCombatDetailViewController;
     @FXML
     private ScrollPane boxesView;
+    @FXML private BoxesController boxesViewController;
     @FXML private ScrollPane showdownView;
     @FXML private ScrollPane wildcardsView;
+    @FXML private ScrollPane inventoryView;
+    @FXML private InventoryController inventoryViewController;
     @FXML private ScrollPane mailboxView;
+    @FXML private MailboxController mailboxViewController;
     @FXML private ScrollPane roulettesView;
     @FXML private HBox emulatorConnectionRow;
     @FXML private Label emulatorConnectionStatus;
     @FXML private ImageView emulatorConnectionIcon;
+    @FXML private ImageView profilePicture;
+    @FXML private Label profileTrainerName;
+    @FXML private VBox notificationEntries;
+    @FXML private VBox notificationEmptyState;
+    @FXML private ScrollPane notificationScroll;
     @FXML private PokemonDetailController pokemonDetailController;
     @FXML private BattleLogController battleLogController;
     @FXML
@@ -164,98 +206,6 @@ public final class MainController {
     @FXML
     private Label partySlot5Hp;
     @FXML
-    private ImageView detailPlayerSprite;
-    @FXML
-    private ImageView detailEnemySprite;
-    @FXML private ImageView detailPlayerTypeOne;
-    @FXML private ImageView detailPlayerTypeTwo;
-    @FXML private ImageView detailEnemyTypeOne;
-    @FXML private ImageView detailEnemyTypeTwo;
-    @FXML private ImageView detailPlayerTeam0;
-    @FXML private ImageView detailPlayerTeam1;
-    @FXML private ImageView detailPlayerTeam2;
-    @FXML private ImageView detailPlayerTeam3;
-    @FXML private ImageView detailPlayerTeam4;
-    @FXML private ImageView detailPlayerTeam5;
-    @FXML private StackPane detailPlayerTeamCard0;
-    @FXML private StackPane detailPlayerTeamCard1;
-    @FXML private StackPane detailPlayerTeamCard2;
-    @FXML private StackPane detailPlayerTeamCard3;
-    @FXML private StackPane detailPlayerTeamCard4;
-    @FXML private StackPane detailPlayerTeamCard5;
-    @FXML private ImageView detailPlayerItem0;
-    @FXML private ImageView detailPlayerItem1;
-    @FXML private ImageView detailPlayerItem2;
-    @FXML private ImageView detailPlayerItem3;
-    @FXML private ImageView detailPlayerItem4;
-    @FXML private ImageView detailPlayerItem5;
-    @FXML private ImageView detailEnemyTeam0;
-    @FXML private ImageView detailEnemyTeam1;
-    @FXML private ImageView detailEnemyTeam2;
-    @FXML private ImageView detailEnemyTeam3;
-    @FXML private ImageView detailEnemyTeam4;
-    @FXML private ImageView detailEnemyTeam5;
-    @FXML
-    private Label detailPlayerName;
-    @FXML
-    private Label detailEnemyName;
-    @FXML
-    private Label detailPlayerMeta;
-    @FXML
-    private Label detailEnemyMeta;
-    @FXML private Label detailPlayerStatus;
-    @FXML private Label detailEnemyStatus;
-    @FXML
-    private ProgressBar detailEnemyHpBar;
-    @FXML
-    private Label detailEnemyHp;
-    @FXML private ProgressBar detailPlayerStat0;
-    @FXML private ProgressBar detailPlayerStat1;
-    @FXML private ProgressBar detailPlayerStat2;
-    @FXML private ProgressBar detailPlayerStat3;
-    @FXML private ProgressBar detailPlayerStat4;
-    @FXML private ProgressBar detailEnemyStat0;
-    @FXML private ProgressBar detailEnemyStat1;
-    @FXML private ProgressBar detailEnemyStat2;
-    @FXML private ProgressBar detailEnemyStat3;
-    @FXML private ProgressBar detailEnemyStat4;
-    @FXML private Label detailPlayerStat0Label;
-    @FXML private Label detailPlayerStat1Label;
-    @FXML private Label detailPlayerStat2Label;
-    @FXML private Label detailPlayerStat3Label;
-    @FXML private Label detailPlayerStat4Label;
-    @FXML private Label detailEnemyStat0Label;
-    @FXML private Label detailEnemyStat1Label;
-    @FXML private Label detailEnemyStat2Label;
-    @FXML private Label detailEnemyStat3Label;
-    @FXML private Label detailEnemyStat4Label;
-    @FXML private Label detailPlayerBoost0;
-    @FXML private Label detailPlayerBoost1;
-    @FXML private Label detailPlayerBoost2;
-    @FXML private Label detailPlayerBoost3;
-    @FXML private Label detailPlayerBoost4;
-    @FXML private Label detailEnemyBoost0;
-    @FXML private Label detailEnemyBoost1;
-    @FXML private Label detailEnemyBoost2;
-    @FXML private Label detailEnemyBoost3;
-    @FXML private Label detailEnemyBoost4;
-    @FXML
-    private Label detailPlayerInfo;
-    @FXML
-    private Label detailEnemyInfo;
-    @FXML private Label detailPlayerAbility;
-    @FXML private Label detailPlayerItem;
-    @FXML private Label detailEnemyAbility;
-    @FXML private Label detailEnemyItem;
-    @FXML
-    private HBox detailMove0;
-    @FXML
-    private HBox detailMove1;
-    @FXML
-    private HBox detailMove2;
-    @FXML
-    private HBox detailMove3;
-    @FXML
     private ImageView partySlot0Sprite;
     @FXML
     private ImageView partySlot1Sprite;
@@ -271,23 +221,38 @@ public final class MainController {
     private final AtomicBoolean refreshingLiveData = new AtomicBoolean();
     private final AtomicBoolean usingPokeVial = new AtomicBoolean();
     private final AtomicBoolean pollingBattleText = new AtomicBoolean();
+    private final Object liveClientLock = new Object();
     private final BattleLogManager battleLogManager = new BattleLogManager(new BattleLogStore());
     private final PokeVial pokeVial = new PokeVial();
     private final PokemonSpriteCache spriteCache = new PokemonSpriteCache();
-    private final PokemonItemSpriteCache itemSpriteCache = new PokemonItemSpriteCache();
-    private final Image missingNoSprite = bundledImage("missingno.png");
-    private final Image pokeballSprite = bundledImage("enemy-team-pokeball.png");
+    private final SaveFileWatcher saveFileWatcher = new SaveFileWatcher(GAME_CONFIG);
+    private final WindowsNotificationService windowsNotifications = new WindowsNotificationService();
     private final Image emulatorConnectedIcon = bundledImage("madalime.png");
     private final Image emulatorDisconnectedIcon = bundledImage("madalime_off.png");
+    private final Image defaultProfilePicture = bundledImage("profile.png");
+    private AudioClip pokeVialSound;
+    private AudioClip notificationSound;
+    private NotificationConnection notificationConnection;
+    private long notificationGeneration;
+    private final Set<Long> displayedNotificationIds = new HashSet<>();
+    private final Map<String, Long> recentRealtimeNotifications = new LinkedHashMap<>();
     private Timeline liveRefreshTimeline;
     private Timeline battleTextTimeline;
+    private CitraUdpClient liveClient;
     private static final long GAME_PROBE_INTERVAL_NANOS = 3_000_000_000L;
     private static final long GAME_WARMUP_NANOS = 2_000_000_000L;
     private volatile boolean liveSessionReady;
+    private volatile boolean emulatorConnected;
     private volatile long nextGameProbeNanos;
     private volatile long gameWarmupUntilNanos;
     private volatile boolean battleActive;
+    private boolean authenticated;
     private volatile boolean singleBattleActive;
+    private volatile boolean sosBattleActive;
+    private volatile boolean battleRoyaleActive;
+    private volatile boolean allyBattleActive;
+    private volatile String latestBattleText = "";
+    private volatile String primaryTurnPokemon = "";
     private Label[] partyNames;
     private Label[] partyDetails;
     private Label[] partyHp;
@@ -296,38 +261,30 @@ public final class MainController {
     private final int[] partySpriteSpecies = new int[6];
     private final int[] activeSpriteSpecies = new int[2];
     private Label[] playerMoveLabels;
-    private HBox[] detailMoveCards;
-    private Tooltip[] detailMoveTooltips;
-    private final Map<String, Image> moveAssetCache = new HashMap<>();
-    private ImageView[] detailPlayerTypes;
-    private ImageView[] detailEnemyTypes;
-    private ImageView[] detailPlayerTeamSprites;
-    private StackPane[] detailPlayerTeamCards;
-    private ImageView[] detailPlayerItemSprites;
-    private Tooltip[] detailPlayerItemTooltips;
     private final int[] detailPlayerTeamItems = new int[6];
-    private ImageView[] detailEnemyTeamSprites;
-    private ProgressBar[] detailPlayerStats;
-    private ProgressBar[] detailEnemyStats;
-    private Label[] detailPlayerStatLabels;
-    private Label[] detailEnemyStatLabels;
-    private Label[] detailPlayerBoosts;
-    private Label[] detailEnemyBoosts;
-    private Tooltip[] detailPlayerStatTooltips;
-    private Tooltip[] detailEnemyStatTooltips;
-    private Tooltip detailPlayerAbilityTooltip;
-    private Tooltip detailPlayerItemTooltip;
-    private Tooltip detailEnemyAbilityTooltip;
-    private Tooltip detailEnemyItemTooltip;
     private final int[] detailPlayerTeamSpecies = new int[6];
     private final int[] detailEnemyTeamSpecies = new int[6];
     private PartySnapshot[] lastLoggedParty = new PartySnapshot[0];
     private PartySnapshot[] latestParty = new PartySnapshot[0];
+    private boolean sidebarCollapsed;
     private static final DateTimeFormatter BATTLE_HISTORY_TIME = DateTimeFormatter
             .ofPattern("dd MMM · HH:mm", new Locale("es", "MX"));
 
     @FXML
     private void initialize() {
+        profilePicture.setClip(new Circle(21, 21, 21));
+        combatDetailViewController.bind(this::closeCombatDetails,
+                this::openCurrentBattleLog, this::openPokemonDetails);
+        combatDetailViewController.configure(spriteCache);
+        doubleCombatDetailViewController.configure(spriteCache, this::closeCombatDetails,
+                this::openCurrentBattleLog, this::openPokemonDetails);
+        sosCombatDetailViewController.configure(spriteCache, this::closeCombatDetails,
+                this::openCurrentBattleLog, this::openPokemonDetails);
+        battleRoyaleCombatDetailViewController.configure(spriteCache, this::closeCombatDetails,
+                this::openCurrentBattleLog, this::openPokemonDetails);
+        allyCombatDetailViewController.configure(spriteCache, this::closeCombatDetails,
+                this::openCurrentBattleLog, this::openPokemonDetails);
+        boxesViewController.setPokemonDetailsAction(this::openServerPokemonDetails);
         partyNames = new Label[]{partySlot0Name, partySlot1Name, partySlot2Name,
                 partySlot3Name, partySlot4Name, partySlot5Name};
         partyDetails = new Label[]{partySlot0Details, partySlot1Details, partySlot2Details,
@@ -342,40 +299,6 @@ public final class MainController {
             updatePartySlotInteraction(slot, false);
         }
         playerMoveLabels = new Label[]{playerMove0Label, playerMove1Label, playerMove2Label, playerMove3Label};
-        detailMoveCards = new HBox[]{detailMove0, detailMove1, detailMove2, detailMove3};
-        detailMoveTooltips = installMoveTooltips(detailMoveCards);
-        detailPlayerTeamSprites = new ImageView[]{detailPlayerTeam0, detailPlayerTeam1, detailPlayerTeam2,
-                detailPlayerTeam3, detailPlayerTeam4, detailPlayerTeam5};
-        detailPlayerTeamCards = new StackPane[]{detailPlayerTeamCard0, detailPlayerTeamCard1,
-                detailPlayerTeamCard2, detailPlayerTeamCard3, detailPlayerTeamCard4, detailPlayerTeamCard5};
-        for (int slot = 0; slot < detailPlayerTeamCards.length; slot++) {
-            updateDetailTeamSlotInteraction(slot, false);
-        }
-        detailPlayerItemSprites = new ImageView[]{detailPlayerItem0, detailPlayerItem1, detailPlayerItem2,
-                detailPlayerItem3, detailPlayerItem4, detailPlayerItem5};
-        detailPlayerItemTooltips = installItemTooltips(detailPlayerItemSprites);
-        detailPlayerTypes = new ImageView[]{detailPlayerTypeOne, detailPlayerTypeTwo};
-        detailEnemyTypes = new ImageView[]{detailEnemyTypeOne, detailEnemyTypeTwo};
-        detailEnemyTeamSprites = new ImageView[]{detailEnemyTeam0, detailEnemyTeam1, detailEnemyTeam2,
-                detailEnemyTeam3, detailEnemyTeam4, detailEnemyTeam5};
-        detailPlayerStats = new ProgressBar[]{detailPlayerStat0, detailPlayerStat1, detailPlayerStat2,
-                detailPlayerStat3, detailPlayerStat4};
-        detailEnemyStats = new ProgressBar[]{detailEnemyStat0, detailEnemyStat1, detailEnemyStat2,
-                detailEnemyStat3, detailEnemyStat4};
-        detailPlayerStatLabels = new Label[]{detailPlayerStat0Label, detailPlayerStat1Label,
-                detailPlayerStat2Label, detailPlayerStat3Label, detailPlayerStat4Label};
-        detailEnemyStatLabels = new Label[]{detailEnemyStat0Label, detailEnemyStat1Label,
-                detailEnemyStat2Label, detailEnemyStat3Label, detailEnemyStat4Label};
-        detailPlayerBoosts = new Label[]{detailPlayerBoost0, detailPlayerBoost1, detailPlayerBoost2,
-                detailPlayerBoost3, detailPlayerBoost4};
-        detailEnemyBoosts = new Label[]{detailEnemyBoost0, detailEnemyBoost1, detailEnemyBoost2,
-                detailEnemyBoost3, detailEnemyBoost4};
-        detailPlayerStatTooltips = installStatTooltips(detailPlayerStats);
-        detailEnemyStatTooltips = installStatTooltips(detailEnemyStats);
-        detailPlayerAbilityTooltip = installDescriptionTooltip(detailPlayerAbility);
-        detailPlayerItemTooltip = installDescriptionTooltip(detailPlayerItem);
-        detailEnemyAbilityTooltip = installDescriptionTooltip(detailEnemyAbility);
-        detailEnemyItemTooltip = installDescriptionTooltip(detailEnemyItem);
         updateBattleCardInteraction(false);
         updatePokeVial(null, false);
         try {
@@ -384,13 +307,20 @@ public final class MainController {
             LOGGER.log(System.Logger.Level.WARNING, "Could not load battle log history", exception);
         }
         renderBattleLogPanel();
+        clearNotifications();
+        mailboxViewController.setSessionListener(this::setAuthenticated);
+        mailboxViewController.setTrainerListener(profileTrainerName::setText);
+        mailboxViewController.setProfileImageListener(
+                image -> profilePicture.setImage(image == null ? defaultProfilePicture : image));
+        inventoryViewController.configure(this::executeInventoryCommand);
+        saveFileWatcher.start();
         // Battle detection must remain independent from the currently selected screen.
         // Keep battle activation and single/double classification responsive even when the emulator
         // is running above normal speed. The guarded refresh skips ticks while a read is in flight.
-        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.millis(500), ignored -> refreshLiveData()));
+        liveRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(2), ignored -> refreshLiveData()));
         liveRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         liveRefreshTimeline.play();
-        battleTextTimeline = new Timeline(new KeyFrame(Duration.millis(350), ignored -> pollBattleText()));
+        battleTextTimeline = new Timeline(new KeyFrame(Duration.millis(500), ignored -> pollBattleText()));
         battleTextTimeline.setCycleCount(Timeline.INDEFINITE);
         battleTextTimeline.play();
         refreshLiveData();
@@ -399,13 +329,68 @@ public final class MainController {
     @FXML
     private void selectSection(javafx.event.ActionEvent event) {
         ToggleButton selectedButton = (ToggleButton) event.getSource();
+        if (!selectedButton.isSelected()) {
+            selectedButton.setSelected(true);
+            return;
+        }
+        if (!authenticated) return;
+        showSection(selectedButton);
+    }
+
+    @FXML
+    private void toggleSidebar() {
+        sidebarCollapsed = !sidebarCollapsed;
+        double width = sidebarCollapsed ? 82 : 264;
+        sidebar.setMinWidth(width);
+        sidebar.setPrefWidth(width);
+        sidebar.setMaxWidth(width);
+        if (sidebarCollapsed) {
+            if (!sidebar.getStyleClass().contains("sidebar-collapsed")) {
+                sidebar.getStyleClass().add("sidebar-collapsed");
+            }
+        } else {
+            sidebar.getStyleClass().remove("sidebar-collapsed");
+        }
+
+        setShown(sidebarWordmark, !sidebarCollapsed);
+        setShown(sidebarAppIcon, sidebarCollapsed);
+        setShown(emulatorConnectionDetails, !sidebarCollapsed);
+        setShown(emulatorRetryButton, !sidebarCollapsed);
+        setShown(trainerDetails, !sidebarCollapsed);
+        setShown(logoutButton, !sidebarCollapsed);
+        navigation.setPadding(sidebarCollapsed
+                ? new Insets(8)
+                : new Insets(8, 0, 8, 12));
+        sidebarFooter.setPadding(sidebarCollapsed
+                ? new Insets(10)
+                : new Insets(10, 14, 14, 16));
+        sidebarCollapseButton.setText(sidebarCollapsed ? "›" : "‹");
+
+        navigationGroup.getToggles().stream()
+                .map(toggle -> (ToggleButton) toggle)
+                .forEach(button -> {
+                    button.setContentDisplay(sidebarCollapsed
+                            ? ContentDisplay.GRAPHIC_ONLY
+                            : ContentDisplay.LEFT);
+                    button.setTooltip(sidebarCollapsed ? new Tooltip(button.getText()) : null);
+                });
+    }
+
+    private static void setShown(javafx.scene.Node node, boolean shown) {
+        node.setManaged(shown);
+        node.setVisible(shown);
+    }
+
+    private void showSection(ToggleButton selectedButton) {
         boolean showLive = "COMBATES".equals(selectedButton.getText());
         boolean showBoxes = "CAJAS".equals(selectedButton.getText());
         boolean showShowdown = "SHOWDOWN".equals(selectedButton.getText());
         boolean showWildcards = "COMODINES".equals(selectedButton.getText());
+        boolean showInventory = "MOCHILA".equals(selectedButton.getText());
         boolean showMailbox = "BUZÓN".equals(selectedButton.getText());
         boolean showRoulettes = "RULETAS".equals(selectedButton.getText());
-        boolean showHome = !(showLive || showBoxes || showShowdown || showWildcards || showMailbox || showRoulettes);
+        boolean showHome = !(showLive || showBoxes || showShowdown || showWildcards || showInventory
+                || showMailbox || showRoulettes);
         homeView.setManaged(showHome);
         homeView.setVisible(showHome);
         boxesView.setManaged(showBoxes);
@@ -414,17 +399,74 @@ public final class MainController {
         showdownView.setVisible(showShowdown);
         wildcardsView.setManaged(showWildcards);
         wildcardsView.setVisible(showWildcards);
+        inventoryView.setManaged(showInventory);
+        inventoryView.setVisible(showInventory);
         mailboxView.setManaged(showMailbox);
         mailboxView.setVisible(showMailbox);
         roulettesView.setManaged(showRoulettes);
         roulettesView.setVisible(showRoulettes);
         combatDetailView.setManaged(false);
         combatDetailView.setVisible(false);
+        doubleCombatDetailView.setManaged(false);
+        doubleCombatDetailView.setVisible(false);
+        sosCombatDetailView.setManaged(false);
+        sosCombatDetailView.setVisible(false);
+        battleRoyaleCombatDetailView.setManaged(false);
+        battleRoyaleCombatDetailView.setVisible(false);
+        allyCombatDetailView.setManaged(false);
+        allyCombatDetailView.setVisible(false);
         liveView.setManaged(showLive);
         liveView.setVisible(showLive);
         if (showLive) {
             refreshLiveData();
         }
+        if (showMailbox) {
+            mailboxViewController.refresh();
+        }
+        if (showBoxes) {
+            boxesViewController.refresh();
+        }
+        if (showInventory) {
+            inventoryViewController.refresh();
+        }
+    }
+
+    private CompletableFuture<String> executeInventoryCommand(ServerClient.ClientCommand command,
+                                                               InventoryController.CommandTarget target) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!"modify_pokemon_ev.v1".equals(command.capability())
+                    && !"modify_nature.v1".equals(command.capability())) {
+                throw new CompletionException(new IllegalArgumentException(
+                        "Capacidad no soportada: " + command.capability()));
+            }
+            if (emulatorConnected || liveSessionReady) {
+                throw new CompletionException(new IllegalStateException(
+                        "Cierra LimoMada3DS antes de modificar el guardado"));
+            }
+            int slot = target.slot();
+            try {
+                SmSaveEditor editor = new SmSaveEditor();
+                SmSaveEditor.Result result;
+                if ("modify_nature.v1".equals(command.capability())) {
+                    Object rawNature = command.payload().get("nature");
+                    if (!(rawNature instanceof Number nature))
+                        throw new IllegalArgumentException("Payload de naturaleza inválido");
+                    result = editor.modifyNature(PokemonGameConfig.pokemonMoon().save().file(), slot,
+                            target.pokemon().dexNumber(), nature.intValue());
+                } else {
+                    Object rawStat = command.payload().get("stat");
+                    Object rawAmount = command.payload().get("amount");
+                    if (!(rawStat instanceof String stat) || !(rawAmount instanceof Number amount))
+                        throw new IllegalArgumentException("Payload de EV inválido");
+                    result = editor.addEv(PokemonGameConfig.pokemonMoon().save().file(), slot,
+                            target.pokemon().dexNumber(), stat, amount.intValue());
+                }
+                return result.field() + ": " + result.before() + " → " + result.after()
+                        + " (backup: " + result.backup().getFileName() + ")";
+            } catch (Exception exception) {
+                throw new CompletionException(exception);
+            }
+        });
     }
 
     @FXML
@@ -432,15 +474,36 @@ public final class MainController {
         if (!battleActive) return;
         liveView.setManaged(false);
         liveView.setVisible(false);
-        combatDetailView.setManaged(true);
-        combatDetailView.setVisible(true);
+        showCombatPanel(singleBattleActive, sosBattleActive, battleRoyaleActive, allyBattleActive);
         refreshLiveData();
+    }
+
+    private void showCombatPanel(boolean single, boolean sos, boolean royale, boolean ally) {
+        combatDetailView.setManaged(single);
+        combatDetailView.setVisible(single);
+        sosCombatDetailView.setManaged(sos);
+        sosCombatDetailView.setVisible(sos);
+        battleRoyaleCombatDetailView.setManaged(royale);
+        battleRoyaleCombatDetailView.setVisible(royale);
+        allyCombatDetailView.setManaged(ally);
+        allyCombatDetailView.setVisible(ally);
+        boolean doubles = !single && !sos && !royale && !ally;
+        doubleCombatDetailView.setManaged(doubles);
+        doubleCombatDetailView.setVisible(doubles);
     }
 
     @FXML
     private void closeCombatDetails() {
         combatDetailView.setManaged(false);
         combatDetailView.setVisible(false);
+        doubleCombatDetailView.setManaged(false);
+        doubleCombatDetailView.setVisible(false);
+        sosCombatDetailView.setManaged(false);
+        sosCombatDetailView.setVisible(false);
+        battleRoyaleCombatDetailView.setManaged(false);
+        battleRoyaleCombatDetailView.setVisible(false);
+        allyCombatDetailView.setManaged(false);
+        allyCombatDetailView.setVisible(false);
         liveView.setManaged(true);
         liveView.setVisible(true);
     }
@@ -474,24 +537,34 @@ public final class MainController {
         }
         boolean gameProbe = probingForGame;
         Thread.startVirtualThread(() -> {
-            try (CitraUdpClient client = gameProbe
-                    ? new CitraUdpClient("localhost", CitraUdpClient.DEFAULT_PORT,
-                    java.time.Duration.ofMillis(300))
-                    : new CitraUdpClient()) {
+            try {
                 if (gameProbe) {
-                    // MadaLime creates the RPC endpoint as the emulated title starts. A single-byte
+                    // LimoMada3DS creates the RPC endpoint as the emulated title starts. A single-byte
                     // probe detects that transition without starting all party/battle readers while
                     // the ROM is still being initialized.
-                    client.readMemory(SmMemoryMap.INSTANCE.party().address(), 1);
+                    try (CitraUdpClient client = new CitraUdpClient(GAME_CONFIG.ram().host(), GAME_CONFIG.ram().port(),
+                            java.time.Duration.ofMillis(300))) {
+                        client.readMemory(GAME_CONFIG.ram().memoryMap().party().address(), 1);
+                    }
                     Platform.runLater(() -> {
                         gameWarmupUntilNanos = System.nanoTime() + GAME_WARMUP_NANOS;
                         setConnectionState("Juego detectado…", null);
                     });
                     return;
                 }
-                PartySnapshot[] party = readParty(client);
-                ActiveSnapshot active = readActivePokemon(client);
-                BattleSnapshot battle = readBattle(client, active);
+                LiveSnapshot snapshot = withLiveClient(client -> {
+                    PartySnapshot[] party = readParty(client);
+                    ActiveSnapshot active = readActivePokemon(client);
+                    if (active.playerOne() == 0 && active.enemyOne() == 0
+                            && active.playerTwo() == 0 && active.enemyTwo() == 0) {
+                        latestBattleText = "";
+                    }
+                    BattleSnapshot battle = readBattle(client, active, latestBattleText);
+                    return new LiveSnapshot(party, active, battle);
+                });
+                PartySnapshot[] party = snapshot.party();
+                ActiveSnapshot active = snapshot.active();
+                BattleSnapshot battle = snapshot.battle();
                 Platform.runLater(() -> renderLiveData(party, active, battle));
             } catch (Exception exception) {
                 Platform.runLater(() -> {
@@ -508,10 +581,10 @@ public final class MainController {
     }
 
     private void markGameUnavailable() {
-        updateBattleLogState(false, false, "");
+        updateBattleLogState(false, false, "", "");
         updateBattleCardInteraction(false);
         battleModeLabel.setText("Fuera de combate");
-        battleSummaryMessage.setText("Abre un juego en MadaLime");
+        battleSummaryMessage.setText("Abre un juego en LimoMada3DS");
         if (combatDetailView.isVisible()) {
             closeCombatDetails();
         }
@@ -520,10 +593,12 @@ public final class MainController {
     private void pollBattleText() {
         if (!battleActive || !pollingBattleText.compareAndSet(false, true)) return;
         Thread.startVirtualThread(() -> {
-            try (CitraUdpClient client = new CitraUdpClient()) {
-                String message = new SmBattleTextReader(client).read().message();
+            try {
+                String message = withLiveClient(client -> new SmBattleTextReader(client).read().message());
+                latestBattleText = message;
                 Platform.runLater(() -> {
-                    if (battleActive && battleLogManager.record(Instant.now(), message, singleBattleActive)) {
+                    if (battleActive && battleLogManager.record(Instant.now(), message, singleBattleActive,
+                            primaryTurnPokemon)) {
                         updateActiveBattleLogModal();
                     }
                 });
@@ -537,7 +612,7 @@ public final class MainController {
 
     private static PartySnapshot[] readParty(CitraUdpClient client) throws Exception {
         PartySnapshot[] result = new PartySnapshot[6];
-        var party = SmMemoryMap.INSTANCE.party();
+        var party = GAME_CONFIG.ram().memoryMap().party();
         for (int slot = 0; slot < result.length; slot++) {
             long address = party.address() + (long) party.slotStride() * slot;
             byte[] encryptedPokemon = client.readMemory(address, party.pokemonDataSize());
@@ -583,23 +658,25 @@ public final class MainController {
         return new ActiveSnapshot(species[0], species[1], species[2], species[3]);
     }
 
-    private static BattleSnapshot readBattle(CitraUdpClient client, ActiveSnapshot active) throws Exception {
+    private static BattleSnapshot readBattle(CitraUdpClient client, ActiveSnapshot active,
+                                             String battleText) throws Exception {
         if (active.playerOne() == 0 && active.enemyOne() == 0
                 && active.playerTwo() == 0 && active.enemyTwo() == 0) {
             return BattleSnapshot.empty();
         }
 
-        var combat = SmMemoryMap.INSTANCE
+        var combat = GAME_CONFIG.ram().memoryMap()
                 .battle(net.paramada.pokemada.game.official.shared.memory.BattleEnvironment.WILD).combat();
-        int finalSlot = 17;
+        int finalSlot = 23;
         int regionSize = finalSlot * combat.pokemonStride() + combat.pokemonDataSize();
         byte[] region = client.readMemory(combat.address(), regionSize);
         BattlePokemonSnapshot[] playerTeam = parseBattleTeam(region, combat.pokemonStride(), 0);
+        BattlePokemonSnapshot[] allyTeam = parseBattleTeam(region, combat.pokemonStride(), 6);
         BattlePokemonSnapshot[] enemyTeam = parseBattleTeam(region, combat.pokemonStride(), 12);
+        BattlePokemonSnapshot[] fourthTeam = parseBattleTeam(region, combat.pokemonStride(), 18);
         BattlePokemonSnapshot player = findBattlePokemon(playerTeam, active.playerOne());
         BattlePokemonSnapshot enemy = findBattlePokemon(enemyTeam, active.enemyOne());
-        String battleText = new SmBattleTextReader(client).read().message();
-        return new BattleSnapshot(player, enemy, playerTeam, enemyTeam, battleText);
+        return new BattleSnapshot(player, enemy, playerTeam, allyTeam, enemyTeam, fourthTeam, battleText);
     }
 
     private static BattlePokemonSnapshot[] parseBattleTeam(byte[] region, int stride, int firstSlot) {
@@ -622,6 +699,10 @@ public final class MainController {
             }
         }
         return BattlePokemonSnapshot.empty();
+    }
+
+    private static boolean containsSpecies(BattlePokemonSnapshot[] team, int species) {
+        return species != 0 && findBattlePokemon(team, species).species() != 0;
     }
 
     private static BattlePokemonSnapshot parseBattlePokemon(byte[] data, int offset) {
@@ -694,7 +775,7 @@ public final class MainController {
                 loadPartySprite(slot, pokemon.species());
             }
         }
-        teamSummaryLabel.setText(occupied + (occupied == 1 ? " Pokémon" : " Pokémon"));
+        teamSummaryLabel.setText(occupied + " Pokémon");
 
         boolean hasActiveAddresses = active.playerOne() != 0 || active.enemyOne() != 0
                 || active.playerTwo() != 0 || active.enemyTwo() != 0;
@@ -702,6 +783,14 @@ public final class MainController {
                 && battle.player().species() != 0
                 && battle.enemy().species() != 0;
         boolean singleBattle = inBattle && active.playerTwo() == 0 && active.enemyTwo() == 0;
+        boolean royaleBattle = inBattle && active.enemyTwo() != 0
+                && containsSpecies(battle.fourthTeam(), active.enemyTwo());
+        boolean allyBattle = inBattle && !royaleBattle && active.playerTwo() != 0
+                && containsSpecies(battle.allyTeam(), active.playerTwo());
+        boolean sosBattle = inBattle && !royaleBattle && active.playerTwo() == 0 && active.enemyTwo() != 0;
+        sosBattleActive = sosBattle;
+        battleRoyaleActive = royaleBattle;
+        allyBattleActive = allyBattle;
         try {
             boolean recharged = pokeVial.observe(toVialPartyState(party), inBattle);
             updatePokeVial(recharged ? "Recargado en el Centro Pokémon" : null, inBattle);
@@ -709,13 +798,22 @@ public final class MainController {
             LOGGER.log(System.Logger.Level.WARNING, "Could not persist Poke Vial recharge", exception);
             updatePokeVial("No se pudo guardar el estado", inBattle);
         }
-        updateBattleLogState(inBattle, singleBattle, battle.battleText());
+        primaryTurnPokemon = primaryTurnPokemon(party, battle.player());
+        updateBattleLogState(inBattle, singleBattle, battle.battleText(), primaryTurnPokemon);
         updateBattleCardInteraction(inBattle);
-        if (!inBattle && combatDetailView.isVisible()) {
+        boolean detailsOpen = combatDetailView.isVisible() || doubleCombatDetailView.isVisible()
+                || sosCombatDetailView.isVisible() || battleRoyaleCombatDetailView.isVisible();
+        detailsOpen = detailsOpen || allyCombatDetailView.isVisible();
+        if (!inBattle && detailsOpen) {
             closeCombatDetails();
+        } else if (inBattle && detailsOpen) {
+            // SOS starts (and can end) midway through a normal wild encounter. Keep the same
+            // detail session open and swap its presentation as the active slots change.
+            showCombatPanel(singleBattle, sosBattle, royaleBattle, allyBattle);
         }
         battleModeLabel.setText(inBattle
-                ? (active.playerTwo() != 0 || active.enemyTwo() != 0 ? "Combate doble" : "Combate individual")
+                ? (royaleBattle ? "Battle Royale" : allyBattle ? "Combate con aliado" : sosBattle ? "Combate SOS" : active.playerTwo() != 0 || active.enemyTwo() != 0
+                        ? "Combate doble" : "Combate individual")
                 : "Fuera de combate");
         battleSummaryMessage.setText(inBattle
                 ? "Hay un combate activo"
@@ -725,11 +823,29 @@ public final class MainController {
         renderBattleSide(1, battle.enemy(), enemyActiveLabel, enemyActiveMetaLabel,
                 enemyHpLabel, enemyHpBar, enemyBattleDetailsLabel, enemyActiveSprite);
         renderMoves(battle.player());
-        renderCombatDetails(party, battle);
+        if (combatDetailView.isVisible()) {
+            combatDetailViewController.render(party, battle);
+        }
+        if (doubleCombatDetailView.isVisible()) {
+            doubleCombatDetailViewController.render(party, battle, active);
+        }
+        if (sosCombatDetailView.isVisible()) {
+            sosCombatDetailViewController.render(party, battle, active);
+        }
+        if (battleRoyaleCombatDetailView.isVisible()) {
+            battleRoyaleCombatDetailViewController.render(party, battle, active);
+        }
+        if (allyCombatDetailView.isVisible()) {
+            allyCombatDetailViewController.render(party, battle, active);
+        }
     }
 
     @FXML
     private void usePokeVial() {
+        if (!emulatorConnected) {
+            updatePokeVial("Conecta LimoMada3DS para usar Poke Vial", false);
+            return;
+        }
         if (battleActive) {
             updatePokeVial("No puede usarse durante un combate", true);
             return;
@@ -746,18 +862,18 @@ public final class MainController {
         pokeVialStatus.setText("Restaurando equipo…");
         Thread.startVirtualThread(() -> {
             String message;
+            boolean healed = false;
             try {
                 waitForLiveRefresh();
-                try (CitraUdpClient client = new CitraUdpClient()) {
-                    SmPartyHealer.HealResult result = new SmPartyHealer().heal(client);
+                SmPartyHealer.HealResult result = withLiveClient(client -> new SmPartyHealer().heal(client));
                     if (result.healedSlots() == 0) {
                         message = "Tu equipo ya está completamente restaurado";
                     } else {
                         pokeVial.consume();
+                        healed = true;
                         message = "Equipo restaurado · " + result.healedSlots() +
                                 (result.healedSlots() == 1 ? " Pokémon" : " Pokémon");
                     }
-                }
             } catch (Exception exception) {
                 LOGGER.log(System.Logger.Level.ERROR, "Poke Vial failed", exception);
                 message = "No se pudo restaurar · " + conciseError(exception);
@@ -765,11 +881,72 @@ public final class MainController {
                 usingPokeVial.set(false);
             }
             String finalMessage = message;
+            boolean finalHealed = healed;
             Platform.runLater(() -> {
+                if (finalHealed) playPokeVialSound();
                 updatePokeVial(finalMessage, battleActive);
                 refreshLiveData();
             });
         });
+    }
+
+    private void playPokeVialSound() {
+        try {
+            if (pokeVialSound == null) {
+                pokeVialSound = new AudioClip(MainController.class.getResource(
+                        "/net/paramada/pokemada/assets/poke-vial.mp3").toExternalForm());
+            }
+            pokeVialSound.play();
+        } catch (RuntimeException exception) {
+            LOGGER.log(System.Logger.Level.WARNING, "Could not play Poke Vial sound", exception);
+        }
+    }
+
+    private void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+        sidebar.setManaged(authenticated);
+        sidebar.setVisible(authenticated);
+        if (!authenticated) {
+            stopNotifications();
+            clearNotifications();
+            homeView.setManaged(false);
+            homeView.setVisible(false);
+            liveView.setManaged(false);
+            liveView.setVisible(false);
+            boxesView.setManaged(false);
+            boxesView.setVisible(false);
+            showdownView.setManaged(false);
+            showdownView.setVisible(false);
+            wildcardsView.setManaged(false);
+            wildcardsView.setVisible(false);
+            roulettesView.setManaged(false);
+            roulettesView.setVisible(false);
+            combatDetailView.setManaged(false);
+            combatDetailView.setVisible(false);
+            doubleCombatDetailView.setManaged(false);
+            doubleCombatDetailView.setVisible(false);
+            sosCombatDetailView.setManaged(false);
+            sosCombatDetailView.setVisible(false);
+            battleRoyaleCombatDetailView.setManaged(false);
+            battleRoyaleCombatDetailView.setVisible(false);
+            allyCombatDetailView.setManaged(false);
+            allyCombatDetailView.setVisible(false);
+            mailboxView.setManaged(true);
+            mailboxView.setVisible(true);
+            return;
+        }
+        startNotifications();
+        homeNavigationButton.setSelected(true);
+        showSection(homeNavigationButton);
+    }
+
+    public void refreshProfile() {
+        if (authenticated) mailboxViewController.refreshProfile();
+    }
+
+    @FXML
+    private void logout() {
+        if (authenticated) mailboxViewController.logoutSession();
     }
 
     private void waitForLiveRefresh() throws InterruptedException, IOException {
@@ -790,7 +967,7 @@ public final class MainController {
 
     private void updatePokeVial(String message, boolean inBattle) {
         pokeVialButton.setText("POKE VIAL  ·  " + pokeVial.charges() + "/" + pokeVial.maxCharges());
-        pokeVialButton.setDisable(inBattle || !pokeVial.available() || usingPokeVial.get());
+        pokeVialButton.setDisable(!emulatorConnected || inBattle || !pokeVial.available() || usingPokeVial.get());
         if (message != null) pokeVialStatus.setText(message);
     }
 
@@ -856,13 +1033,15 @@ public final class MainController {
         }
     }
 
-    private void updateBattleLogState(boolean inBattle, boolean singleBattle, String latestMessage) {
+    private void updateBattleLogState(boolean inBattle, boolean singleBattle, String latestMessage,
+                                      String primaryPokemonName) {
         Instant now = Instant.now();
+        boolean wasActive = battleLogManager.isActive();
         battleActive = inBattle;
         singleBattleActive = singleBattle;
         if (inBattle) {
             if (!battleLogManager.isActive()) battleLogManager.begin(now);
-            if (battleLogManager.record(now, latestMessage, singleBattle)) updateActiveBattleLogModal();
+            if (battleLogManager.record(now, latestMessage, singleBattle, primaryPokemonName)) updateActiveBattleLogModal();
         } else if (battleLogManager.isActive()) {
             try {
                 battleLogManager.finish(now);
@@ -871,7 +1050,7 @@ public final class MainController {
                 LOGGER.log(System.Logger.Level.ERROR, "Could not persist battle log", exception);
             }
         }
-        renderBattleLogPanel();
+        if (wasActive != battleLogManager.isActive()) renderBattleLogPanel();
     }
 
     private void renderBattleLogPanel() {
@@ -922,8 +1101,15 @@ public final class MainController {
     public void shutdown() {
         battleActive = false;
         singleBattleActive = false;
+        sosBattleActive = false;
+        battleRoyaleActive = false;
+        allyBattleActive = false;
         if (liveRefreshTimeline != null) liveRefreshTimeline.stop();
         if (battleTextTimeline != null) battleTextTimeline.stop();
+        stopNotifications();
+        windowsNotifications.close();
+        saveFileWatcher.close();
+        closeLiveClient();
         if (battleLogManager.isActive()) {
             try {
                 battleLogManager.finish(Instant.now());
@@ -942,6 +1128,46 @@ public final class MainController {
         } catch (NumberFormatException exception) {
             return;
         }
+        openPokemonDetails(slot);
+    }
+
+    private <T> T withLiveClient(ClientOperation<T> operation) throws Exception {
+        synchronized (liveClientLock) {
+            if (liveClient == null) liveClient = new CitraUdpClient(
+                    GAME_CONFIG.ram().host(), GAME_CONFIG.ram().port());
+            try {
+                return operation.apply(liveClient);
+            } catch (Exception exception) {
+                liveClient.close();
+                liveClient = null;
+                throw exception;
+            }
+        }
+    }
+
+    private void closeLiveClient() {
+        synchronized (liveClientLock) {
+            if (liveClient != null) {
+                liveClient.close();
+                liveClient = null;
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface ClientOperation<T> {
+        T apply(CitraUdpClient client) throws Exception;
+    }
+
+    private static String primaryTurnPokemon(PartySnapshot[] party, BattlePokemonSnapshot primary) {
+        if (primary.species() == 0) return "";
+        for (PartySnapshot pokemon : party) {
+            if (pokemon.species() == primary.species() && !pokemon.nickname().isBlank()) return pokemon.nickname();
+        }
+        return PokemonSpeciesDex.nameOrFallback(primary.species());
+    }
+
+    private void openPokemonDetails(int slot) {
         if (slot < 0 || slot >= latestParty.length) return;
         PartySnapshot pokemon = latestParty[slot];
         if (pokemon.species() == 0) return;
@@ -950,457 +1176,150 @@ public final class MainController {
                 pokemon.realStats(), pokemon.moves());
     }
 
-    private void renderCombatDetails(PartySnapshot[] party, BattleSnapshot battle) {
-        renderDetailedSide(battle.player(), detailPlayerName, detailPlayerMeta, detailPlayerStatus, detailPlayerInfo,
-                detailPlayerSprite, detailPlayerStats, detailPlayerStatLabels, detailPlayerBoosts,
-                detailPlayerStatTooltips, detailPlayerTypes, detailPlayerAbility, detailPlayerItem,
-                detailPlayerAbilityTooltip, detailPlayerItemTooltip);
-        renderDetailedSide(battle.enemy(), detailEnemyName, detailEnemyMeta, detailEnemyStatus, detailEnemyInfo,
-                detailEnemySprite, detailEnemyStats, detailEnemyStatLabels, detailEnemyBoosts,
-                detailEnemyStatTooltips, detailEnemyTypes, detailEnemyAbility, detailEnemyItem,
-                detailEnemyAbilityTooltip, detailEnemyItemTooltip);
-        renderEnemyInformationVisibility(party, battle.player());
-        for (int move = 0; move < detailMoveCards.length; move++) {
-            int moveId = battle.player().moves()[move];
-            renderMove(move, moveId, battle.player(), battle.enemy());
+    private void startNotifications() {
+        stopNotifications();
+        clearNotifications();
+        ServerSettings settings = ServerSettings.load();
+        if (settings.token().isBlank() || settings.username().isBlank()) return;
+
+        long generation = notificationGeneration;
+        startRealtimeNotifications(settings);
+        new ServerClient(settings.baseUrl()).notifications(settings.token()).whenComplete((notifications, failure) ->
+                Platform.runLater(() -> {
+                    if (notificationGeneration != generation || !authenticated) return;
+                    if (failure != null) {
+                        LOGGER.log(System.Logger.Level.WARNING, "Could not load notification history", failure);
+                        return;
+                    }
+                    for (ServerClient.Notification notification : notifications) {
+                        if (notification.id() > 0 && displayedNotificationIds.add(notification.id())
+                                && !recentlyReceived(notification.message())) {
+                            addNotificationRow(notification.message(), notification.createdAt(), false);
+                        }
+                    }
+                    updateNotificationEmptyState();
+                }));
+    }
+
+    @FXML
+    private void reconnectNotifications() {
+        if (!authenticated) return;
+        LOGGER.log(System.Logger.Level.INFO, "Manual notification WebSocket reconnect requested");
+        startRealtimeNotifications(ServerSettings.load());
+    }
+
+    private void startRealtimeNotifications(ServerSettings settings) {
+        stopRealtimeNotifications();
+        if (settings.username().isBlank()) {
+            LOGGER.log(System.Logger.Level.WARNING,
+                    "Notification WebSocket was not started because the username is empty");
+            return;
         }
-        for (int slot = 0; slot < 6; slot++) {
-            updateDetailTeamSlotInteraction(slot, party[slot].species() != 0);
-            loadDetailTeamSprite(detailPlayerTeamSprites[slot], detailPlayerTeamSpecies, slot, party[slot].species());
-            renderPartyItem(slot, party[slot]);
-            int enemySpecies = battle.enemyTeam()[slot].species();
-            detailEnemyTeamSpecies[slot] = enemySpecies;
-            ImageView enemySlot = detailEnemyTeamSprites[slot];
-            enemySlot.setFitWidth(enemySpecies == 0 ? 76 : 56);
-            enemySlot.setFitHeight(enemySpecies == 0 ? 68 : 50);
-            enemySlot.setImage(enemySpecies == 0 ? missingNoSprite : pokeballSprite);
+        try {
+            NotificationConnection connection = new NotificationConnection(settings.baseUrl(), settings.username(),
+                    event -> Platform.runLater(() -> showRealtimeNotification(event)));
+            notificationConnection = connection;
+            connection.start();
+        } catch (RuntimeException failure) {
+            notificationConnection = null;
+            LOGGER.log(System.Logger.Level.WARNING,
+                    "Could not start notification WebSocket; the application will continue without real-time events",
+                    failure);
         }
     }
 
-    private void updateDetailTeamSlotInteraction(int slot, boolean occupied) {
-        StackPane card = detailPlayerTeamCards[slot];
-        card.setMouseTransparent(!occupied);
-        if (occupied) {
-            if (!card.getStyleClass().contains("clickable-card")) {
-                card.getStyleClass().add("clickable-card");
+    private void showRealtimeNotification(NotificationConnection.Event event) {
+        if (!authenticated) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Ignored real-time server notification while signed out: type={0}, message={1}",
+                    event.type(), event.message());
+            return;
+        }
+        LOGGER.log(System.Logger.Level.INFO,
+                "Displaying real-time server notification: type={0}, message={1}",
+                event.type(), event.message());
+        long now = System.currentTimeMillis();
+        recentRealtimeNotifications.put(event.message(), now);
+        recentRealtimeNotifications.entrySet().removeIf(entry -> now - entry.getValue() > 30_000);
+        addNotificationRow(event.message(), Instant.now(), true);
+        if ("notification".equals(event.type())) {
+            windowsNotifications.show("¡Notificación!", event.message());
+        }
+        playNotificationSound();
+        updateNotificationEmptyState();
+    }
+
+    private boolean recentlyReceived(String message) {
+        Long receivedAt = recentRealtimeNotifications.get(message);
+        return receivedAt != null && System.currentTimeMillis() - receivedAt < 30_000;
+    }
+
+    private void addNotificationRow(String message, Instant createdAt, boolean newestFirst) {
+        Label text = new Label(message);
+        text.setWrapText(true);
+        text.setMaxWidth(Double.MAX_VALUE);
+        text.getStyleClass().add("notification-message");
+        String timeText = createdAt == null ? "" : DateTimeFormatter.ofPattern("dd MMM · HH:mm", new Locale("es", "MX"))
+                .withZone(ZoneId.systemDefault()).format(createdAt);
+        Label time = new Label(timeText);
+        time.getStyleClass().add("notification-time");
+        VBox row = new VBox(4, text, time);
+        row.getStyleClass().add("notification-entry");
+        if (newestFirst) notificationEntries.getChildren().addFirst(row);
+        else notificationEntries.getChildren().add(row);
+        while (notificationEntries.getChildren().size() > 20) {
+            notificationEntries.getChildren().removeLast();
+        }
+    }
+
+    private void updateNotificationEmptyState() {
+        boolean empty = notificationEntries.getChildren().isEmpty();
+        notificationEmptyState.setManaged(empty);
+        notificationEmptyState.setVisible(empty);
+        notificationScroll.setManaged(!empty);
+        notificationScroll.setVisible(!empty);
+    }
+
+    private void clearNotifications() {
+        displayedNotificationIds.clear();
+        recentRealtimeNotifications.clear();
+        if (notificationEntries != null) notificationEntries.getChildren().clear();
+        if (notificationEmptyState != null) updateNotificationEmptyState();
+    }
+
+    private void stopNotifications() {
+        notificationGeneration++;
+        stopRealtimeNotifications();
+    }
+
+    private void stopRealtimeNotifications() {
+        NotificationConnection connection = notificationConnection;
+        notificationConnection = null;
+        if (connection != null) connection.close();
+    }
+
+    private void playNotificationSound() {
+        try {
+            if (notificationSound == null) {
+                notificationSound = new AudioClip(MainController.class.getResource(
+                        "/net/paramada/pokemada/assets/poke-vial.mp3").toExternalForm());
+                notificationSound.setVolume(0.65);
             }
-            card.getStyleClass().remove("team-pokemon-preview-empty");
-        } else {
-            card.getStyleClass().remove("clickable-card");
-            if (!card.getStyleClass().contains("team-pokemon-preview-empty")) {
-                card.getStyleClass().add("team-pokemon-preview-empty");
-            }
+            notificationSound.play();
+            LOGGER.log(System.Logger.Level.INFO, "Notification sound playback requested");
+        } catch (RuntimeException exception) {
+            LOGGER.log(System.Logger.Level.WARNING, "Could not play notification sound", exception);
         }
     }
 
-    private void renderMove(
-            int slot, int moveId, BattlePokemonSnapshot attacker, BattlePokemonSnapshot enemy
-    ) {
-        HBox card = detailMoveCards[slot];
-        Tooltip tooltip = detailMoveTooltips[slot];
-        card.getStyleClass().remove("stab");
-        card.getChildren().clear();
-        if (moveId == 0) {
-            card.getChildren().add(new Label("—"));
-            tooltip.setText("");
-            return;
-        }
-        PokemonMoveDex.find(moveId).ifPresentOrElse(move -> {
-            if (hasStab(move.type(), attacker)) card.getStyleClass().add("stab");
-            ImageView typeIcon = moveIcon(typeAssetName(move.type()), 27);
-            Label name = new Label(move.name());
-            name.getStyleClass().add("move-card-name");
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-            ImageView categoryIcon = moveIcon(categoryAssetName(move.category()), 25);
-            card.getChildren().addAll(typeIcon, name, spacer, categoryIcon);
-            if (enemy.species() != 0) MoveEffectiveness.against(move, enemy.typeOne(), enemy.typeTwo()).ifPresent(multiplier -> {
-                Label badge = new Label("x" + formatMultiplier(multiplier));
-                badge.getStyleClass().addAll("move-multiplier", multiplier > 1 ? "effective"
-                        : multiplier < 1 ? "resisted" : "neutral");
-                card.getChildren().add(badge);
-            });
-            String description = move.description().isBlank()
-                    ? "Sin descripción disponible en Gen VII." : move.description();
-            tooltip.setText("%s%n%nTipo: %s · Categoría: %s%nPotencia: %s · Precisión: %s"
-                    .formatted(description, move.type(), move.category(),
-                            move.power() < 0 ? "—" : Integer.toString(move.power()),
-                            move.accuracy() < 0 ? "—" : move.accuracy() + "%"));
-        }, () -> {
-            card.getChildren().add(new Label("Movimiento #" + moveId));
-            tooltip.setText("Movimiento no incluido en el catálogo de Gen VII.");
-        });
-    }
-
-    private ImageView moveIcon(String filename, double size) {
-        Image image = moveAssetCache.computeIfAbsent(filename,
-                ignored -> bundledImage("moves/" + filename));
-        ImageView view = new ImageView(image);
-        view.setFitWidth(size);
-        view.setFitHeight(size);
-        view.setPreserveRatio(true);
-        view.setSmooth(true);
-        return view;
-    }
-
-    private static String categoryAssetName(String category) {
-        return switch (category.toLowerCase()) {
-            case "físico" -> "physical_move.png";
-            case "especial" -> "special_move.png";
-            default -> "status_move.png";
-        };
-    }
-
-    private static String typeAssetName(String type) {
-        return switch (type) {
-            case "Lucha" -> "Fighting.png"; case "Volador" -> "Flying.png";
-            case "Veneno" -> "Poison.png"; case "Tierra" -> "Ground.png";
-            case "Roca" -> "Rock.png"; case "Bicho" -> "Bug.png";
-            case "Fantasma" -> "Ghost.png"; case "Acero" -> "Steel.png";
-            case "Fuego" -> "Fire.png"; case "Agua" -> "Water.png";
-            case "Planta" -> "Grass.png"; case "Eléctrico" -> "Electric.png";
-            case "Psíquico" -> "Psychic.png"; case "Hielo" -> "Ice.png";
-            case "Dragón" -> "Dragon.png"; case "Siniestro" -> "Dark.png";
-            case "Hada" -> "Fairy.png"; default -> "Normal.png";
-        };
-    }
-
-    private static String formatMultiplier(double multiplier) {
-        return multiplier == Math.rint(multiplier)
-                ? Integer.toString((int) multiplier) : Double.toString(multiplier);
-    }
-
-    private static boolean hasStab(String moveType, BattlePokemonSnapshot attacker) {
-        if (attacker.species() == 0) return false;
-        String moveAsset = typeAssetName(moveType);
-        return moveAsset.equals(typeAssetName(attacker.typeOne()))
-                || moveAsset.equals(typeAssetName(attacker.typeTwo()));
-    }
-
-    private static Tooltip[] installMoveTooltips(HBox[] cards) {
-        Tooltip[] tooltips = new Tooltip[cards.length];
-        for (int index = 0; index < cards.length; index++) {
-            Tooltip tooltip = new Tooltip();
-            tooltip.setShowDelay(Duration.millis(450));
-            tooltip.setHideDelay(Duration.millis(150));
-            tooltip.setWrapText(true);
-            tooltip.setMaxWidth(380);
-            Tooltip.install(cards[index], tooltip);
-            tooltips[index] = tooltip;
-        }
-        return tooltips;
-    }
-
-    private void loadDetailTeamSprite(ImageView view, int[] renderedSpecies, int slot, int species) {
-        if (renderedSpecies[slot] == species && view.getImage() != null) return;
-        renderedSpecies[slot] = species;
-        if (species == 0) {
-            view.setImage(missingNoSprite);
-            return;
-        }
-        spriteCache.load(species).thenAccept(image -> Platform.runLater(() -> {
-            if (renderedSpecies[slot] == species) view.setImage(image.orElse(null));
-        }));
-    }
-
-    private void renderPartyItem(int slot, PartySnapshot pokemon) {
-        ImageView badge = detailPlayerItemSprites[slot];
-        Tooltip tooltip = detailPlayerItemTooltips[slot];
-        int itemId = pokemon.species() == 0 ? 0 : pokemon.heldItem();
-        if (itemId == 0) {
-            detailPlayerTeamItems[slot] = 0;
-            badge.setImage(null);
-            badge.setManaged(false);
-            badge.setVisible(false);
-            tooltip.setText("");
-            return;
-        }
-        PokemonItemDex.find(itemId).ifPresentOrElse(item -> {
-            tooltip.setText(descriptionText(item.name(), item.description()));
-            badge.setManaged(true);
-            badge.setVisible(true);
-            if (detailPlayerTeamItems[slot] == itemId && badge.getImage() != null) return;
-            detailPlayerTeamItems[slot] = itemId;
-            badge.setImage(null);
-            itemSpriteCache.load(item.identifier()).thenAccept(image -> Platform.runLater(() -> {
-                if (detailPlayerTeamItems[slot] != itemId) return;
-                badge.setImage(image.orElse(null));
-                badge.setManaged(image.isPresent());
-                badge.setVisible(image.isPresent());
-            }));
-        }, () -> {
-            detailPlayerTeamItems[slot] = itemId;
-            badge.setImage(null);
-            badge.setManaged(false);
-            badge.setVisible(false);
-            tooltip.setText("Objeto #" + itemId + "\n\nSin descripción disponible en Gen VII.");
-        });
-    }
-
-    private void renderTypes(ImageView[] icons, int first, int second) {
-        renderTypeIcon(icons[0], first, first >= 0 && first <= 17);
-        renderTypeIcon(icons[1], second, second >= 0 && second <= 17 && second != first);
-    }
-
-    private void renderTypeIcon(ImageView icon, int type, boolean shown) {
-        icon.setManaged(shown);
-        icon.setVisible(shown);
-        icon.setImage(shown ? moveAssetCache.computeIfAbsent(typeAssetName(type),
-                ignored -> bundledImage("moves/" + typeAssetName(type))) : null);
-        installTypeTooltip(icon, shown ? typeName(type) : "");
-    }
-
-    private static void installTypeTooltip(ImageView icon, String name) {
-        Object stored = icon.getProperties().get("type-tooltip");
-        Tooltip tooltip;
-        if (stored instanceof Tooltip existing) {
-            tooltip = existing;
-        } else {
-            tooltip = new Tooltip();
-            tooltip.getStyleClass().add("type-tooltip");
-            tooltip.setShowDelay(Duration.millis(450));
-            Tooltip.install(icon, tooltip);
-            icon.getProperties().put("type-tooltip", tooltip);
-        }
-        tooltip.setText(name);
-    }
-
-    private static String typeName(int type) {
-        return switch (type) {
-            case 0 -> "Normal"; case 1 -> "Lucha"; case 2 -> "Volador";
-            case 3 -> "Veneno"; case 4 -> "Tierra"; case 5 -> "Roca";
-            case 6 -> "Bicho"; case 7 -> "Fantasma"; case 8 -> "Acero";
-            case 9 -> "Fuego"; case 10 -> "Agua"; case 11 -> "Planta";
-            case 12 -> "Eléctrico"; case 13 -> "Psíquico"; case 14 -> "Hielo";
-            case 15 -> "Dragón"; case 16 -> "Siniestro"; case 17 -> "Hada";
-            default -> "";
-        };
-    }
-
-    private static String typeAssetName(int type) {
-        return switch (type) {
-            case 1 -> "Fighting.png"; case 2 -> "Flying.png"; case 3 -> "Poison.png";
-            case 4 -> "Ground.png"; case 5 -> "Rock.png"; case 6 -> "Bug.png";
-            case 7 -> "Ghost.png"; case 8 -> "Steel.png"; case 9 -> "Fire.png";
-            case 10 -> "Water.png"; case 11 -> "Grass.png"; case 12 -> "Electric.png";
-            case 13 -> "Psychic.png"; case 14 -> "Ice.png"; case 15 -> "Dragon.png";
-            case 16 -> "Dark.png"; case 17 -> "Fairy.png"; default -> "Normal.png";
-        };
-    }
-
-    private static void renderAbilityAndItem(
-            BattlePokemonSnapshot pokemon, Label abilityLabel, Label itemLabel,
-            Tooltip abilityTooltip, Tooltip itemTooltip
-    ) {
-        if (pokemon.species() == 0) {
-            abilityLabel.setText("Habilidad: —");
-            itemLabel.setText("Objeto: —");
-            abilityTooltip.setText("");
-            itemTooltip.setText("");
-            return;
-        }
-        PokemonAbilityDex.find(pokemon.ability()).ifPresentOrElse(ability -> {
-            abilityLabel.setText("Habilidad: " + ability.name());
-            abilityTooltip.setText(descriptionText(ability.name(), ability.description()));
-        }, () -> {
-            abilityLabel.setText("Habilidad: #" + pokemon.ability());
-            abilityTooltip.setText("Sin descripción disponible en Gen VII.");
-        });
-        if (pokemon.heldItem() == 0) {
-            itemLabel.setText("Objeto: Ninguno");
-            itemTooltip.setText("Este Pokémon no lleva ningún objeto.");
-        } else PokemonItemDex.find(pokemon.heldItem()).ifPresentOrElse(item -> {
-            itemLabel.setText("Objeto: " + item.name());
-            itemTooltip.setText(descriptionText(item.name(), item.description()));
-        }, () -> {
-            itemLabel.setText("Objeto: #" + pokemon.heldItem());
-            itemTooltip.setText("Sin descripción disponible en Gen VII.");
-        });
-    }
-
-    private void renderEnemyInformationVisibility(PartySnapshot[] party, BattlePokemonSnapshot player) {
-        int originalAbility = originalAbilityOf(party, player);
-        boolean abilityKnown = originalAbility == 36; // Rastro
-        boolean itemKnown = originalAbility == 119; // Cacheo
-        setKnownInformation(detailEnemyAbility, detailEnemyAbilityTooltip, abilityKnown);
-        setKnownInformation(detailEnemyItem, detailEnemyItemTooltip, itemKnown);
-    }
-
-    private static int originalAbilityOf(PartySnapshot[] party, BattlePokemonSnapshot player) {
-        if (player.species() == 0) return 0;
-        for (PartySnapshot pokemon : party) {
-            if (pokemon.species() == player.species()) return pokemon.ability();
-        }
-        return player.ability();
-    }
-
-    private static void setKnownInformation(Label label, Tooltip tooltip, boolean known) {
-        label.setManaged(known);
-        label.setVisible(known);
-        if (!known) tooltip.setText("");
-    }
-
-    private static String descriptionText(String name, String description) {
-        return name + "\n\n" + (description.isBlank()
-                ? "Sin descripción disponible en Gen VII." : description);
-    }
-
-    private static Tooltip installDescriptionTooltip(Label label) {
-        Tooltip tooltip = descriptionTooltip();
-        Tooltip.install(label, tooltip);
-        return tooltip;
-    }
-
-    private static Tooltip[] installItemTooltips(ImageView[] badges) {
-        Tooltip[] tooltips = new Tooltip[badges.length];
-        for (int index = 0; index < badges.length; index++) {
-            tooltips[index] = descriptionTooltip();
-            Tooltip.install(badges[index], tooltips[index]);
-        }
-        return tooltips;
-    }
-
-    private static Tooltip descriptionTooltip() {
-        Tooltip tooltip = new Tooltip();
-        tooltip.getStyleClass().add("description-tooltip");
-        tooltip.setShowDelay(Duration.millis(450));
-        tooltip.setHideDelay(Duration.millis(150));
-        tooltip.setWrapText(true);
-        tooltip.setMaxWidth(380);
-        return tooltip;
-    }
-
-    private void renderDetailedSide(
-            BattlePokemonSnapshot pokemon, Label name, Label meta, Label statusBadge, Label info, ImageView sprite,
-            ProgressBar[] statBars, Label[] statLabels, Label[] boostBadges, Tooltip[] statTooltips,
-            ImageView[] typeIcons, Label abilityLabel, Label itemLabel,
-            Tooltip abilityTooltip, Tooltip itemTooltip
-    ) {
-        if (pokemon.species() == 0) {
-            name.setText("—");
-            meta.setText("Sin Pokémon activo");
-            renderStatusBadge(statusBadge, "Sin estado");
-            info.setText("Esperando un combate individual");
-            renderTypes(typeIcons, -1, -1);
-            renderAbilityAndItem(pokemon, abilityLabel, itemLabel, abilityTooltip, itemTooltip);
-            for (int index = 0; index < statBars.length; index++) {
-                statBars[index].setProgress(0);
-                applyStatTier(statBars[index], 0);
-                statLabels[index].setText(statName(index));
-                statTooltips[index].setText("—");
-                renderBoostBadge(boostBadges[index], 0);
-            }
-            sprite.setImage(null);
-            return;
-        }
-        name.setText(speciesName(pokemon.species()));
-        meta.setText("#%04d  ·  Nv. %d".formatted(pokemon.species(), pokemon.level()));
-        renderStatusBadge(statusBadge, pokemon.status());
-        int[] baseStats = PokemonBaseStats.forSpecies(pokemon.species());
-        for (int index = 0; index < statBars.length; index++) {
-            int value = baseStats[index];
-            statBars[index].setProgress(Math.min(value, 256) / 256.0);
-            applyStatTier(statBars[index], value);
-            statLabels[index].setText(statName(index));
-            statTooltips[index].setText(Integer.toString(value));
-            renderBoostBadge(boostBadges[index], pokemon.boosts()[index]);
-        }
-        info.setText("");
-        renderTypes(typeIcons, pokemon.typeOne(), pokemon.typeTwo());
-        renderAbilityAndItem(pokemon, abilityLabel, itemLabel, abilityTooltip, itemTooltip);
-        spriteCache.load(pokemon.species()).thenAccept(image ->
-                Platform.runLater(() -> sprite.setImage(image.orElse(null))));
-    }
-
-    private static Tooltip[] installStatTooltips(ProgressBar[] bars) {
-        Tooltip[] tooltips = new Tooltip[bars.length];
-        for (int index = 0; index < bars.length; index++) {
-            tooltips[index] = new Tooltip(statName(index) + ": —");
-            tooltips[index].setShowDelay(Duration.seconds(1.2));
-            tooltips[index].setHideDelay(Duration.millis(150));
-            Tooltip.install(bars[index], tooltips[index]);
-        }
-        return tooltips;
-    }
-
-    private static void applyStatTier(ProgressBar bar, int value) {
-        bar.getStyleClass().removeAll(STAT_TIER_CLASSES);
-        int tier = value < 50 ? 0
-                : value < 80 ? 1
-                : value < 110 ? 2
-                : value < 140 ? 3
-                : value < 180 ? 4
-                : value < 220 ? 5
-                : 6;
-        bar.getStyleClass().add(STAT_TIER_CLASSES[tier]);
+    private void openServerPokemonDetails(net.paramada.pokemada.server.ServerClient.Pokemon pokemon) {
+        pokemonDetailController.show(pokemon.dexNumber(), pokemon.name(), pokemon.level(),
+                pokemon.natureName(), pokemon.ability(), pokemon.heldItem(), pokemon.stats(), pokemon.moves());
     }
 
     private static Image bundledImage(String filename) {
         return new Image(MainController.class.getResource(
                 "/net/paramada/pokemada/assets/" + filename).toExternalForm());
-    }
-
-    private static void renderBoostBadge(Label badge, int rawStage) {
-        int stage = Math.max(-6, Math.min(6, rawStage));
-        boolean boosted = stage != 0;
-        badge.setManaged(boosted);
-        badge.setVisible(boosted);
-        badge.setText(stage > 0 ? "+" + stage : Integer.toString(stage));
-        badge.getStyleClass().removeAll("positive", "negative");
-        if (boosted) badge.getStyleClass().add(stage > 0 ? "positive" : "negative");
-    }
-
-    private static void renderStatusBadge(Label badge, String status) {
-        badge.getStyleClass().removeAll("paralyzed", "asleep", "frozen", "burned", "poisoned");
-        String style = switch (status) {
-            case "PAR" -> "paralyzed";
-            case "DOR" -> "asleep";
-            case "CON" -> "frozen";
-            case "QUE" -> "burned";
-            case "ENV" -> "poisoned";
-            default -> null;
-        };
-        badge.setManaged(style != null);
-        badge.setVisible(style != null);
-        if (style == null) {
-            badge.setText("");
-            return;
-        }
-        badge.getStyleClass().add(style);
-        badge.setText(switch (status) {
-            case "PAR" -> "PARALIZADO";
-            case "DOR" -> "DORMIDO";
-            case "CON" -> "CONGELADO";
-            case "QUE" -> "QUEMADO";
-            default -> "ENVENENADO";
-        });
-    }
-
-    private static String statName(int index) {
-        return switch (index) {
-            case 0 -> "Ataque";
-            case 1 -> "Defensa";
-            case 2 -> "At. Esp.";
-            case 3 -> "Def. Esp.";
-            default -> "Velocidad";
-        };
-    }
-
-    private static String statsText(BattlePokemonSnapshot pokemon) {
-        int[] stats = pokemon.stats();
-        return "ATQ %d   DEF %d   A.ESP %d   D.ESP %d   VEL %d"
-                .formatted(stats[0], stats[1], stats[2], stats[3], stats[4]);
-    }
-
-    private static String boostsText(BattlePokemonSnapshot pokemon) {
-        int[] boosts = pokemon.boosts();
-        return "Boosts: ATQ %s   DEF %s   A.ESP %s   D.ESP %s   VEL %s"
-                .formatted(stage(boosts[0]), stage(boosts[1]), stage(boosts[2]),
-                        stage(boosts[3]), stage(boosts[4]));
-    }
-
-    private static String stage(int value) {
-        return value > 0 ? "+" + value : Integer.toString(value);
     }
 
     private void renderBattleSide(
@@ -1501,6 +1420,7 @@ public final class MainController {
     }
 
     private void setConnectionState(String text, String stateClass) {
+        emulatorConnected = "connected".equals(stateClass);
         emulatorConnectionStatus.setText(text);
         emulatorConnectionStatus.getStyleClass().removeAll("connected", "error");
         emulatorConnectionRow.getStyleClass().removeAll("connected", "error");
@@ -1510,16 +1430,7 @@ public final class MainController {
         }
         emulatorConnectionIcon.setImage("connected".equals(stateClass)
                 ? emulatorConnectedIcon : emulatorDisconnectedIcon);
-    }
-
-    private static String activeName(int first, int second) {
-        if (first == 0 && second == 0) {
-            return "—";
-        }
-        if (second == 0) {
-            return speciesName(first);
-        }
-        return speciesName(first) + " + " + speciesName(second);
+        updatePokeVial(emulatorConnected ? null : "Conecta LimoMada3DS para usar Poke Vial", battleActive);
     }
 
     private static String speciesName(int species) {
@@ -1537,7 +1448,7 @@ public final class MainController {
         return terminator >= 0 ? value.substring(0, terminator) : value;
     }
 
-    private record PartySnapshot(int species, String nickname, int level, int currentHp, int maxHp,
+    record PartySnapshot(int species, String nickname, int level, int currentHp, int maxHp,
                                  int heldItem, int ability, int nature, int[] realStats, int[] moves,
                                  int status, int[] currentPp, int[] maxPp) {
         private static PartySnapshot empty() {
@@ -1546,23 +1457,31 @@ public final class MainController {
         }
     }
 
-    private record ActiveSnapshot(int playerOne, int enemyOne, int playerTwo, int enemyTwo) {
+    record ActiveSnapshot(int playerOne, int enemyOne, int playerTwo, int enemyTwo) {
     }
 
-    private record BattleSnapshot(BattlePokemonSnapshot player, BattlePokemonSnapshot enemy,
-                                  BattlePokemonSnapshot[] playerTeam, BattlePokemonSnapshot[] enemyTeam,
+    private record LiveSnapshot(PartySnapshot[] party, ActiveSnapshot active, BattleSnapshot battle) {
+    }
+
+    record BattleSnapshot(BattlePokemonSnapshot player, BattlePokemonSnapshot enemy,
+                                  BattlePokemonSnapshot[] playerTeam, BattlePokemonSnapshot[] allyTeam,
+                                  BattlePokemonSnapshot[] enemyTeam, BattlePokemonSnapshot[] fourthTeam,
                                   String battleText) {
         private static BattleSnapshot empty() {
             BattlePokemonSnapshot[] playerTeam = new BattlePokemonSnapshot[6];
             BattlePokemonSnapshot[] enemyTeam = new BattlePokemonSnapshot[6];
+            BattlePokemonSnapshot[] allyTeam = new BattlePokemonSnapshot[6];
+            BattlePokemonSnapshot[] fourthTeam = new BattlePokemonSnapshot[6];
             Arrays.fill(playerTeam, BattlePokemonSnapshot.empty());
+            Arrays.fill(allyTeam, BattlePokemonSnapshot.empty());
             Arrays.fill(enemyTeam, BattlePokemonSnapshot.empty());
+            Arrays.fill(fourthTeam, BattlePokemonSnapshot.empty());
             return new BattleSnapshot(BattlePokemonSnapshot.empty(), BattlePokemonSnapshot.empty(),
-                    playerTeam, enemyTeam, "");
+                    playerTeam, allyTeam, enemyTeam, fourthTeam, "");
         }
     }
 
-    private record BattlePokemonSnapshot(
+    record BattlePokemonSnapshot(
             int species,
             int level,
             int currentHp,

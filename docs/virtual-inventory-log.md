@@ -1,12 +1,12 @@
 # Bitácora persistente — mochila virtual
 
-Última actualización: 2026-08-25 — primer objeto de catálogo implementado
+Última actualización: 2026-08-26 — mentas y edición segura de saves
 
 ## Objetivo actual
 
 Construir desde cero una mochila propia para objetos virtuales de evento. El núcleo relacional,
-servicios transaccionales, contrato REST y `SUPER_PROTEIN` ya están implementados; el próximo
-objetivo es integrar `modify_pokemon_stat.v1` en Java/RAM.
+servicios transaccionales, catálogo de suplementos/mentas y capacidades Java sobre save ya están
+implementados. El próximo objetivo es validar un uso real de menta/suplemento con LimoMada3DS.
 
 `market` y `new_market` están fuera de alcance y se consideran legado a deprecar.
 Wildcards deben continuar existiendo, con inventario separado, pero podrán reutilizar el mismo motor
@@ -115,6 +115,39 @@ Escritorio:
 - Comando `install_virtual_inventory_demo` instala/repara el catálogo y opcionalmente concede una
   cantidad a `--username` mediante el ledger, sin usar `market`.
 - Guía ejecutable del flujo completo en `docs/virtual-inventory-super-protein-demo.md`.
+- Nueva pantalla Java `MOCHILA`, separada de `COMODINES`, con catálogo, cantidades, selector del
+  equipo propio, preparación idempotente y estado de operaciones pendientes.
+- `ServerClient` tiene DTOs/métodos tipados para listar inventario, usar objetos, consultar comandos
+  y enviar ACK exitoso/fallido; `Pokemon` conserva ahora el ID relacional usado como target.
+- `modify_pokemon_stat.v1` está conectado a `SmPartyStatModifier`: descifra la estructura de equipo
+  Sun/Moon, valida checksum, modifica el stat autorizado, cifra, escribe y verifica por relectura.
+- Antes de escribir se exige emulador listo, estar fuera de combate y coincidencia especie/slot entre
+  equipo del servidor y RAM. Fallos se confirman al servidor y pasan a revisión.
+- Decisión de recuperación: comandos pendientes de sesiones anteriores se muestran pero no se
+  reejecutan automáticamente, porque una escritura pudo aplicarse antes de perderse el ACK.
+- `VirtualItem.pocket` clasifica explícitamente el catálogo en Mentas, Suplementos, MTs, Botiquín o
+  Evento; no se infiere del nombre/efecto. Migración `virtual_inventory.0003`.
+- La UI Java usa los cinco sprites proporcionados como pestañas en ese orden. Las bolsas vacías se
+  muestran deshabilitadas; al seleccionar una se filtra la lista y se conserva el selector Pokémon.
+- `SUPER_PROTEIN` pertenece a Suplementos. Se descartó la bolsa “Objetos de equipo”.
+- La pantalla toma solo la composición de la mochila de referencia, no sus colores ni su panel
+  superior: bolsas arriba, equipo en filas seleccionables a la izquierda y lista vertical de objetos
+  a la derecha, dentro del lenguaje visual blanco/morado actual de PokeMada.
+- Las filas de objetos son compactas (aprox. 48 px) y admiten el `sprite` propio servido por Django;
+  sprites fuente de 16×16 se muestran a 28×28 con suavizado desactivado y descarga autenticada.
+- `VirtualItemSpriteCache` evita descargas repetidas: deduplica por URL en memoria y persiste imágenes
+  válidas bajo `cache/virtual-items` usando SHA-256 de la URL como clave. Una URL distinta invalida
+  naturalmente la entrada anterior; archivos inválidos se descartan.
+- Nuevo efecto tipado `dummy`: representa objetos sin utilidad directa (por ejemplo foils/llaves de
+  gacha), no requiere target ni config y el endpoint de uso directo lo rechaza sin consumirlo.
+- Nuevo efecto tipado `modify_nature`, con las 25 naturalezas Gen 7 y capacidad `modify_nature.v1`.
+- Catálogo idempotente de 21 mentas, sin condición ni límite por tramo, con nombres/descripciones en
+  español y los sprites de `Downloads/mints` incluidos como assets desplegables del servidor.
+- `modify_pokemon_stat` ahora emite `modify_pokemon_ev.v1`; suplementos y mentas editan el archivo
+  `main`, no RAM. El editor valida tamaño, slot, especie y checksum PK7; respeta 252 por stat/510 total,
+  recalcula checksum PK7 y bloque Party, firma MemeCrypto, verifica, crea backup y reemplaza atómicamente.
+- Por seguridad, el cliente exige cerrar LimoMada3DS antes de escribir el save; el ACK incluye el
+  cambio aplicado y el nombre del backup.
 
 ## Validación realizada
 
@@ -135,6 +168,13 @@ Escritorio:
   concesión por management command. Las pruebas HTTP aíslan su URLConf sin pisar el del Admin.
 - Publicado en servidor como `877153f` sobre `origin/codex/easy-deploy`; documentación publicada
   inicialmente como `c06e7c4` sobre `origin/master` de PokeMada.
+- Suite Java completa tras la integración: 100 pruebas, 0 fallos. Las nuevas pruebas cubren parsing
+  de inventario/comando y modificación verificada sobre datos Pokémon cifrados.
+- Tras añadir bolsas: suite Django 14/14 y suite Java 100/100; `makemigrations --check` limpio.
+- Tras añadir caché de sprites: suite Java 103 pruebas, 0 fallos.
+- Suite Django tras dummy/naturalezas/mentas: 19 pruebas, 0 fallos; migraciones limpias.
+- Suite Java del árbol actual: 96 pruebas, 0 fallos. El editor cubre naturaleza, EV, mismatch de
+  especie, backups y checksums; MemeCrypto coincide byte por byte con el vector oficial de PKHeX.
 
 ## Problemas sin resolver
 
@@ -149,8 +189,9 @@ Escritorio:
 
 ## Próximos pasos recomendados
 
-1. Implementar `modify_pokemon_stat.v1` en Java y la UI de mochila.
-2. Añadir política/acción staff para resolver `needs_review` y liberar o consumir reservas.
+1. Aplicar migración `virtual_inventory.0007`, ejecutar `install_virtual_inventory_demo` y validar
+   una menta/suplemento contra un save real con LimoMada3DS cerrado; conservar el backup generado.
+2. Añadir política/UI staff para resolver `needs_review` y liberar o consumir reservas.
 3. Probar concurrencia real (dos conexiones/DB productiva), expiración y recuperación de comandos.
 4. Crear el adaptador Wildcard al motor compartido sin mezclar inventarios.
 5. Integrar recompensas y avisos WebSocket solo como señal de comandos pendientes.

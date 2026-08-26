@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
@@ -26,19 +27,30 @@
     </fx:define>
 
     <left>
-        <VBox prefWidth="264.0" styleClass="sidebar">
+        <VBox fx:id="sidebar" prefWidth="264.0" styleClass="sidebar">
             <children>
                 <StackPane minHeight="116.0" prefHeight="116.0" styleClass="brand-area">
-                    <ImageView fitHeight="82.0" fitWidth="226.0" preserveRatio="true" smooth="true"
+                    <ImageView fx:id="sidebarWordmark" fitHeight="82.0" fitWidth="226.0" preserveRatio="true" smooth="true"
                                styleClass="master-v-nav-wordmark">
                         <image><Image url="@assets/master-v-wordmark.png"/></image>
                     </ImageView>
+                    <ImageView fx:id="sidebarAppIcon" fitHeight="56.0" fitWidth="56.0" managed="false"
+                               preserveRatio="true" smooth="true" visible="false" styleClass="master-v-nav-emblem">
+                        <image><Image url="@assets/master-v-emblem.png"/></image>
+                    </ImageView>
+                    <Button fx:id="sidebarCollapseButton" mnemonicParsing="false" onAction="#toggleSidebar"
+                            StackPane.alignment="TOP_RIGHT" text="‹" styleClass="sidebar-collapse-button"/>
                 </StackPane>
                 <Separator styleClass="sidebar-separator"/>
 
-                <VBox spacing="4.0" styleClass="navigation">
+                <VBox fx:id="navigation" spacing="4.0" styleClass="navigation">
                     <padding><Insets bottom="8.0" left="12.0" right="0.0" top="8.0"/></padding>
-                    <ToggleButton mnemonicParsing="false" onAction="#selectSection" selected="true" text="COMBATES"
+                    <ToggleButton fx:id="homeNavigationButton" mnemonicParsing="false" onAction="#selectSection"
+                                  selected="true" text="INICIO"
+                                  toggleGroup="$navigationGroup" styleClass="nav-item">
+                        <graphic><Label text="⌂" styleClass="nav-icon"/></graphic>
+                    </ToggleButton>
+                    <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="COMBATES"
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
                         <graphic><Label text="⚔" styleClass="nav-icon"/></graphic>
                     </ToggleButton>
@@ -54,6 +66,10 @@
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
                         <graphic><Label text="✦" styleClass="nav-icon"/></graphic>
                     </ToggleButton>
+                    <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="MOCHILA"
+                                  toggleGroup="$navigationGroup" styleClass="nav-item">
+                        <graphic><Label text="▰" styleClass="nav-icon"/></graphic>
+                    </ToggleButton>
                     <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="BUZÓN"
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
                         <graphic><Label text="✉" styleClass="nav-icon"/></graphic>
@@ -65,7 +81,7 @@
                 </VBox>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <VBox spacing="8.0" styleClass="sidebar-footer">
+                <VBox fx:id="sidebarFooter" spacing="8.0" styleClass="sidebar-footer">
                     <padding><Insets bottom="14.0" left="16.0" right="14.0" top="10.0"/></padding>
                     <Separator styleClass="sidebar-separator"/>
                     <HBox fx:id="emulatorConnectionRow" alignment="CENTER_LEFT" spacing="12.0" styleClass="connection-row">
@@ -73,20 +89,22 @@
                                    preserveRatio="true" smooth="false">
                             <image><Image url="@assets/madalime_off.png"/></image>
                         </ImageView>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label text="MADALIME" styleClass="footer-title"/>
+                        <VBox fx:id="emulatorConnectionDetails" HBox.hgrow="ALWAYS">
+                            <Label text="LimoMada3DS" styleClass="footer-title"/>
                             <Label fx:id="emulatorConnectionStatus" text="Desconectado" styleClass="footer-subtitle"/>
                         </VBox>
-                        <Button mnemonicParsing="false" text="↻" onAction="#refreshLiveData" styleClass="retry-button"/>
+                        <Button fx:id="emulatorRetryButton" mnemonicParsing="false" text="↻" onAction="#refreshLiveData" styleClass="retry-button"/>
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="profile-row">
-                        <ImageView fitHeight="42.0" fitWidth="42.0" preserveRatio="true" styleClass="profile-picture">
+                        <ImageView fx:id="profilePicture" fitHeight="42.0" fitWidth="42.0" preserveRatio="true" styleClass="profile-picture">
                             <image><Image url="@assets/profile.png"/></image>
                         </ImageView>
-                        <VBox>
-                            <Label text="Entrenador" styleClass="profile-name"/>
-                            <Label text="Pokémon X" styleClass="footer-subtitle"/>
+                        <VBox fx:id="trainerDetails" HBox.hgrow="ALWAYS">
+                            <Label fx:id="profileTrainerName" text="Entrenador" styleClass="profile-name"/>
+                            <Label text="Pokémon Luna" styleClass="footer-subtitle"/>
                         </VBox>
+                        <Button fx:id="logoutButton" mnemonicParsing="false" text="SALIR" onAction="#logout"
+                                styleClass="sidebar-logout-button"/>
                     </HBox>
                 </VBox>
             </children>
@@ -122,12 +140,21 @@
                             <VBox prefHeight="300.0" prefWidth="440.0" styleClass="dashboard-card">
                                 <StackPane styleClass="card-header">
                                     <Label text="Notificaciones" styleClass="card-title"/>
+                                    <Button text="Reconectar"
+                                            onAction="#reconnectNotifications"
+                                            styleClass="notification-reconnect-button"
+                                            StackPane.alignment="CENTER_RIGHT"/>
                                 </StackPane>
                                 <StackPane styleClass="empty-card-body" VBox.vgrow="ALWAYS">
-                                    <VBox alignment="CENTER" spacing="10.0">
+                                    <VBox fx:id="notificationEmptyState" alignment="CENTER" spacing="10.0">
                                         <Label text="✓" styleClass="empty-icon"/>
                                         <Label text="Aún no hay notificaciones" styleClass="body-muted"/>
                                     </VBox>
+                                    <ScrollPane fx:id="notificationScroll" fitToWidth="true" hbarPolicy="NEVER" styleClass="notification-scroll">
+                                        <content>
+                                            <VBox fx:id="notificationEntries" spacing="10.0"/>
+                                        </content>
+                                    </ScrollPane>
                                 </StackPane>
                             </VBox>
 
@@ -272,10 +299,15 @@
             <fx:include fx:id="boxesView" source="boxes-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="showdownView" source="showdown-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="wildcardsView" source="wildcards-view.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="inventoryView" source="inventory-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="mailboxView" source="mailbox-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="roulettesView" source="roulettes-view.fxml" managed="false" visible="false"/>
 
             <fx:include fx:id="combatDetailView" source="single-combat-panel.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="doubleCombatDetailView" source="double-combat-panel.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="sosCombatDetailView" source="sos-combat-panel.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="battleRoyaleCombatDetailView" source="battle-royale-combat-panel.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="allyCombatDetailView" source="ally-combat-panel.fxml" managed="false" visible="false"/>
             <fx:include fx:id="pokemonDetail" source="pokemon-detail-view.fxml"/>
             <fx:include fx:id="battleLog" source="battle-log-view.fxml"/>
         </StackPane>

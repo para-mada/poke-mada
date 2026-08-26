@@ -1,34 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
-            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.paramada.pokemada.MailboxController">
     <content>
-        <VBox alignment="TOP_CENTER" styleClass="placeholder-page">
-            <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
-            <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
-                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, pink-header"><Label text="BUZÓN" styleClass="legacy-card-title"/></HBox>
-                <VBox spacing="12" styleClass="legacy-card-body">
+        <StackPane minHeight="760" styleClass="mail-page">
+            <VBox fx:id="loginSection" alignment="CENTER" maxWidth="430" spacing="22" styleClass="mail-login-section">
+                <ImageView fitHeight="92" fitWidth="330" preserveRatio="true" smooth="true">
+                    <image><Image url="@assets/master-v-wordmark.png"/></image>
+                </ImageView>
+                <VBox maxWidth="430" spacing="20" styleClass="mail-login-card">
+                    <VBox alignment="CENTER" spacing="7">
+                        <Label text="INICIAR SESIÓN" styleClass="mail-login-title"/>
+                        <Label text="Accede con tu cuenta de Master V" styleClass="mail-login-subtitle"/>
+                    </VBox>
+                    <VBox spacing="7">
+                        <Label text="USUARIO" styleClass="mail-login-label"/>
+                        <TextField fx:id="username" promptText="Escribe tu usuario" styleClass="mail-field"/>
+                    </VBox>
+                    <VBox spacing="7">
+                        <Label text="CONTRASEÑA" styleClass="mail-login-label"/>
+                        <PasswordField fx:id="password" promptText="Escribe tu contraseña" onAction="#login" styleClass="mail-field"/>
+                    </VBox>
+                    <Button fx:id="loginButton" text="ENTRAR" onAction="#login" maxWidth="Infinity" styleClass="mail-login-button"/>
+                    <Label fx:id="statusLabel" alignment="CENTER" maxWidth="Infinity"
+                           text="La contraseña no se guarda en este equipo" wrapText="true" styleClass="mail-login-status"/>
+                </VBox>
+            </VBox>
+            <VBox fx:id="accountSection" managed="false" visible="false" maxWidth="920" spacing="0" styleClass="legacy-white-card">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, pink-header">
+                    <Label text="BUZÓN" styleClass="legacy-card-title"/>
+                </HBox>
+                <VBox spacing="14" styleClass="legacy-card-body">
+                    <HBox alignment="CENTER_LEFT" spacing="12" styleClass="mail-account-bar">
+                        <Label text="ENTRENADOR" styleClass="legacy-field-label"/>
+                        <Label fx:id="accountLabel" text="—" styleClass="mail-account-name"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="refreshButton" text="ACTUALIZAR" onAction="#refresh" styleClass="legacy-outline-button"/>
+                    </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="16" styleClass="mail-table-header">
                         <Label minWidth="90" text="TIPO"/>
                         <Label minWidth="250" text="TÍTULO"/>
-                        <Label minWidth="210" text="REMITENTE"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Label text="FILTRO  ▾"/>
+                        <Label minWidth="130" text="REMITENTE"/>
+                        <Label minWidth="105" text="ACCIÓN"/>
                     </HBox>
-                    <Separator/>
-                    <VBox alignment="CENTER" minHeight="330" spacing="12">
-                        <Label text="✉" styleClass="mail-empty-icon"/>
-                        <Label text="Aún no tienes recompensas en tu buzón" styleClass="legacy-dark-heading"/>
-                        <Label text="Las recompensas aparecerán aquí cuando se conecte la cuenta del entrenador." styleClass="legacy-placeholder-note"/>
-                    </VBox>
+                    <VBox fx:id="rewardsContainer" spacing="10" minHeight="300"/>
                 </VBox>
             </VBox>
-        </VBox>
+            <padding><Insets bottom="42" left="38" right="38" top="42"/></padding>
+        </StackPane>
     </content>
 </ScrollPane>

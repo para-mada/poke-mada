@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll, inventory-page"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.paramada.pokemada.InventoryController">
+    <fx:define><ToggleGroup fx:id="pocketGroup"/></fx:define>
+    <content>
+        <VBox spacing="18" styleClass="content">
+            <padding><Insets bottom="44" left="38" right="38" top="32"/></padding>
+            <VBox maxWidth="920" spacing="0" styleClass="legacy-white-card">
+                <HBox alignment="CENTER_LEFT" styleClass="legacy-card-header, pink-header">
+                    <Label text="MOCHILA VIRTUAL" styleClass="legacy-card-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="pendingLabel" text="Sin operaciones pendientes"
+                           styleClass="legacy-placeholder-note"/>
+                </HBox>
+
+                <VBox spacing="16" styleClass="legacy-card-body">
+                    <HBox alignment="CENTER_LEFT" spacing="14">
+                        <Label fx:id="pocketTitle" text="SUPLEMENTOS" styleClass="inventory-pocket-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <HBox alignment="CENTER" spacing="10" styleClass="inventory-pocket-bar">
+                            <ToggleButton fx:id="mintsPocket" userData="mints" onAction="#selectPocket"
+                                          toggleGroup="$pocketGroup" styleClass="inventory-pocket-button">
+                                <graphic><ImageView fitHeight="30" fitWidth="30" preserveRatio="true" smooth="false"><image><Image url="@assets/inventory-pocket-mints.png"/></image></ImageView></graphic>
+                            </ToggleButton>
+                            <ToggleButton fx:id="supplementsPocket" userData="supplements" onAction="#selectPocket"
+                                          selected="true" toggleGroup="$pocketGroup" styleClass="inventory-pocket-button">
+                                <graphic><ImageView fitHeight="30" fitWidth="30" preserveRatio="true" smooth="false"><image><Image url="@assets/inventory-pocket-supplements.png"/></image></ImageView></graphic>
+                            </ToggleButton>
+                            <ToggleButton fx:id="tmsPocket" userData="tms" onAction="#selectPocket"
+                                          toggleGroup="$pocketGroup" styleClass="inventory-pocket-button">
+                                <graphic><ImageView fitHeight="30" fitWidth="30" preserveRatio="true" smooth="false"><image><Image url="@assets/inventory-pocket-tms.png"/></image></ImageView></graphic>
+                            </ToggleButton>
+                            <ToggleButton fx:id="medicinePocket" userData="medicine" onAction="#selectPocket"
+                                          toggleGroup="$pocketGroup" styleClass="inventory-pocket-button">
+                                <graphic><ImageView fitHeight="30" fitWidth="30" preserveRatio="true" smooth="false"><image><Image url="@assets/inventory-pocket-medicine.png"/></image></ImageView></graphic>
+                            </ToggleButton>
+                            <ToggleButton fx:id="eventPocket" userData="event" onAction="#selectPocket"
+                                          toggleGroup="$pocketGroup" styleClass="inventory-pocket-button">
+                                <graphic><ImageView fitHeight="30" fitWidth="30" preserveRatio="true" smooth="false"><image><Image url="@assets/inventory-pocket-event.png"/></image></ImageView></graphic>
+                            </ToggleButton>
+                        </HBox>
+                    </HBox>
+
+                    <HBox minHeight="390" spacing="16">
+                        <VBox prefWidth="315" spacing="8" styleClass="inventory-column-card">
+                            <Label text="EQUIPO" styleClass="inventory-column-heading"/>
+                            <VBox fx:id="teamContainer" spacing="5" VBox.vgrow="ALWAYS"/>
+                        </VBox>
+                        <VBox spacing="8" styleClass="inventory-column-card" HBox.hgrow="ALWAYS">
+                            <Label text="OBJETOS" styleClass="inventory-column-heading"/>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="inventory-list-scroll"
+                                        VBox.vgrow="ALWAYS">
+                                <content><VBox fx:id="itemsContainer" spacing="7"/></content>
+                            </ScrollPane>
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Label fx:id="statusLabel" text="Abre la mochila para consultar tus objetos"
+                               styleClass="inventory-status"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="refreshButton" onAction="#refresh" text="ACTUALIZAR"
+                                styleClass="legacy-outline-button"/>
+                        <Button fx:id="useButton" onAction="#useSelected" text="USAR" disable="true"
+                                styleClass="inventory-use-button"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

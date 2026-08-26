@@ -71,14 +71,17 @@ final class BattleLogStoreTest {
     }
 
     @Test
-    void doesNotInsertTurnMarkersForDoubleBattles() {
+    void insertsTurnMarkersOnlyForThePrimaryDoubleBattlePrompt() {
         BattleLogManager manager = new BattleLogManager(new BattleLogStore(temporaryDirectory));
         Instant start = Instant.parse("2026-08-23T18:00:00Z");
         manager.begin(start);
 
-        manager.record(start.plusSeconds(1), "¿Qué debería hacer Popplio?", false);
+        manager.record(start.plusSeconds(1), "¿Qué debería hacer Popplio?", false, "Rowlet");
+        manager.record(start.plusSeconds(2), "¿Qué debería hacer Litten?", false, "Rowlet");
+        manager.record(start.plusSeconds(3), "¿Qué debería hacer Rowlet?", false, "Rowlet");
 
-        assertEquals(List.of("¿Qué debería hacer Popplio?"),
+        assertEquals(List.of("¿Qué debería hacer Popplio?", "¿Qué debería hacer Litten?",
+                        "— TURNO 1 —", "¿Qué debería hacer Rowlet?"),
                 manager.activeEvents().stream().map(BattleLogEvent::message).toList());
     }
 }

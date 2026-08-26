@@ -45,7 +45,8 @@ class DataDumpServiceTest {
 
         assertEquals(13, regions.size());
         assertTrue(regions.stream().anyMatch(region -> region.name().equals("party") && region.length() == 2_904));
-        assertTrue(regions.stream().anyMatch(region -> region.name().equals("battle") && region.length() == 14_434));
+        // Four-owner Battle Royale data occupies slots 0–23 rather than the legacy 0–17 range.
+        assertTrue(regions.stream().anyMatch(region -> region.name().equals("battle") && region.length() == 19_330));
         assertTrue(regions.stream().anyMatch(region -> region.name().equals("bag") && region.length() == 0xde0));
     }
 

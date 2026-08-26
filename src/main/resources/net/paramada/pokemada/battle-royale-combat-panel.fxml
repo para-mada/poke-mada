@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fitToWidth="true"
+            hbarPolicy="NEVER" styleClass="content-scroll"
+            fx:controller="net.paramada.pokemada.BattleRoyaleCombatPanelController">
+    <content>
+        <VBox maxWidth="Infinity" spacing="18" styleClass="content, combat-detail-content, royale-content">
+            <padding><Insets bottom="44" left="32" right="32" top="28"/></padding>
+            <HBox alignment="CENTER_LEFT"><Button text="‹ VOLVER A LIVE" onAction="#close" styleClass="detail-back-button"/><Region HBox.hgrow="ALWAYS"/><Label text="BATTLE ROYALE · 4 ENTRENADORES" styleClass="royale-mode-badge"/></HBox>
+            <GridPane hgap="22" vgap="20">
+                <columnConstraints><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/><ColumnConstraints percentWidth="50" hgrow="ALWAYS"/></columnConstraints>
+                <VBox maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="combat-pokemon-detail, royale-player-card">
+                    <StackPane styleClass="detail-team-header, player-header"><Label text="Tu Pokémon" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" spacing="16" styleClass="detail-card-body, royale-fighter-body"><VBox alignment="CENTER"><ImageView fx:id="fighter0Sprite" fitHeight="105" fitWidth="120" preserveRatio="true"/><HBox fx:id="fighter0Types" alignment="CENTER" spacing="4"/></VBox><VBox alignment="CENTER_LEFT" spacing="6"><Label fx:id="fighter0Name" styleClass="detail-pokemon-name"/><Label fx:id="fighter0Meta" styleClass="detail-pokemon-meta"/><Label fx:id="fighter0Status" styleClass="status-badge"/><Label fx:id="playerAbility" styleClass="detail-data-chip"/><Label fx:id="playerItem" styleClass="detail-data-chip"/></VBox><VBox fx:id="fighter0Stats" minWidth="170" spacing="4" HBox.hgrow="ALWAYS"/></HBox>
+                </VBox>
+                <VBox maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="combat-pokemon-detail, royale-rival-one">
+                    <StackPane styleClass="detail-team-header, royale-header-one"><Label text="Rival 1" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" spacing="16" styleClass="detail-card-body, royale-fighter-body"><VBox alignment="CENTER"><ImageView fx:id="fighter1Sprite" fitHeight="105" fitWidth="120" preserveRatio="true"/><HBox fx:id="fighter1Types" alignment="CENTER" spacing="4"/></VBox><VBox alignment="CENTER_LEFT" spacing="6"><Label fx:id="fighter1Name" styleClass="detail-pokemon-name"/><Label fx:id="fighter1Meta" styleClass="detail-pokemon-meta"/><Label fx:id="fighter1Status" styleClass="status-badge"/></VBox><VBox fx:id="fighter1Stats" minWidth="170" spacing="4" HBox.hgrow="ALWAYS"/></HBox>
+                </VBox>
+                <VBox maxWidth="Infinity" GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="combat-pokemon-detail, royale-rival-two">
+                    <StackPane styleClass="detail-team-header, royale-header-two"><Label text="Rival 2" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" spacing="16" styleClass="detail-card-body, royale-fighter-body"><VBox alignment="CENTER"><ImageView fx:id="fighter2Sprite" fitHeight="105" fitWidth="120" preserveRatio="true"/><HBox fx:id="fighter2Types" alignment="CENTER" spacing="4"/></VBox><VBox alignment="CENTER_LEFT" spacing="6"><Label fx:id="fighter2Name" styleClass="detail-pokemon-name"/><Label fx:id="fighter2Meta" styleClass="detail-pokemon-meta"/><Label fx:id="fighter2Status" styleClass="status-badge"/></VBox><VBox fx:id="fighter2Stats" minWidth="170" spacing="4" HBox.hgrow="ALWAYS"/></HBox>
+                </VBox>
+                <VBox maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="combat-pokemon-detail, royale-rival-three">
+                    <StackPane styleClass="detail-team-header, royale-header-three"><Label text="Rival 3" styleClass="detail-header-title"/></StackPane>
+                    <HBox alignment="CENTER" spacing="16" styleClass="detail-card-body, royale-fighter-body"><VBox alignment="CENTER"><ImageView fx:id="fighter3Sprite" fitHeight="105" fitWidth="120" preserveRatio="true"/><HBox fx:id="fighter3Types" alignment="CENTER" spacing="4"/></VBox><VBox alignment="CENTER_LEFT" spacing="6"><Label fx:id="fighter3Name" styleClass="detail-pokemon-name"/><Label fx:id="fighter3Meta" styleClass="detail-pokemon-meta"/><Label fx:id="fighter3Status" styleClass="status-badge"/></VBox><VBox fx:id="fighter3Stats" minWidth="170" spacing="4" HBox.hgrow="ALWAYS"/></HBox>
+                </VBox>
+            </GridPane>
+            <VBox maxWidth="Infinity" styleClass="combat-pokemon-detail"><StackPane styleClass="detail-team-header, player-header"><Label text="Tus movimientos contra los tres rivales" styleClass="detail-header-title"/></StackPane><VBox spacing="8" styleClass="detail-moves-area"><GridPane fx:id="playerMoves" hgap="10" vgap="9"/></VBox></VBox>
+            <Button maxWidth="Infinity" text="L O G  D E  B A T A L L A   ⚔" onAction="#openLog" styleClass="battle-log-button"/>
+        </VBox>
+    </content>
+</ScrollPane>

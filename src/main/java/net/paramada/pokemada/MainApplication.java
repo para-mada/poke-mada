@@ -4,6 +4,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -21,6 +23,12 @@ public final class MainApplication extends Application {
         MainController controller = fxmlLoader.getController();
         scene.getStylesheets().add(Objects.requireNonNull(
                 MainApplication.class.getResource("styles/main.css")).toExternalForm());
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isControlDown() && event.getCode() == KeyCode.R) {
+                controller.refreshProfile();
+                event.consume();
+            }
+        });
 
         stage.setTitle("Master V Tournament");
         stage.getIcons().add(new Image(Objects.requireNonNull(

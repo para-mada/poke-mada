@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public final class BattleLogManager {
     public static final int HISTORY_LIMIT = 3;
@@ -41,11 +42,21 @@ public final class BattleLogManager {
     }
 
     public synchronized boolean record(Instant now, String message, boolean singleBattle) {
+        return record(now, message, singleBattle, "");
+    }
+
+    /**
+     * In double battles the game asks once for each active Pokémon. Only the
+     * left/primary combatant prompt begins a new shared turn.
+     */
+    public synchronized boolean record(Instant now, String message, boolean singleBattle,
+                                       String primaryPokemonName) {
         if (!isActive()) return false;
         String normalized = BattleMessageSanitizer.sanitize(message);
         if (normalized.isBlank() || normalized.equals(lastObservedMessage)) return false;
         lastObservedMessage = normalized;
-        if (singleBattle && isTurnPrompt(normalized)) {
+        if ((singleBattle && isTurnPrompt(normalized))
+                || (!singleBattle && isTurnPromptFor(normalized, primaryPokemonName))) {
             turnNumber++;
             activeEvents.add(new BattleLogEvent(now, TURN_MARKER_PREFIX + turnNumber + " —"));
         }
@@ -59,6 +70,12 @@ public final class BattleLogManager {
 
     static boolean isTurnPrompt(String message) {
         return message != null && message.matches("(?iu)^¿?qué debería hacer\\s+.+\\?$" );
+    }
+
+    static boolean isTurnPromptFor(String message, String pokemonName) {
+        if (pokemonName == null || pokemonName.isBlank()) return false;
+        return message != null && message.matches("(?iu)^¿?qué debería hacer\\s+"
+                + Pattern.quote(pokemonName.trim()) + "\\?$");
     }
 
     public synchronized Optional<BattleLogSession> finish(Instant now) throws IOException {

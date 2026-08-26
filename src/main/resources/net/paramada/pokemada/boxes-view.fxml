@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.GridPane?>
@@ -16,16 +17,31 @@
         <VBox alignment="TOP_CENTER" spacing="14" styleClass="boxes-content">
             <padding><Insets bottom="42" left="38" right="38" top="32"/></padding>
 
+            <VBox maxWidth="900" spacing="14" styleClass="box-browser-controls">
+                <HBox alignment="BOTTOM_LEFT" spacing="14">
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="¿A QUIÉN VOY A VER?" styleClass="box-selector-label"/>
+                        <ComboBox fx:id="trainerSelector" maxWidth="Infinity" promptText="Seleccionar entrenador"
+                                  styleClass="box-selector"/>
+                    </VBox>
+                    <VBox spacing="6" HBox.hgrow="ALWAYS">
+                        <Label text="CAJA" styleClass="box-selector-label"/>
+                        <ComboBox fx:id="boxSelector" maxWidth="Infinity" promptText="Seleccionar caja"
+                                  styleClass="box-selector"/>
+                    </VBox>
+                    <Button fx:id="teamButton" mnemonicParsing="false" onAction="#showTeam" text="VER EQUIPO"
+                            styleClass="box-team-button"/>
+                </HBox>
+            </VBox>
+
             <VBox maxWidth="900" spacing="0" styleClass="boxes-card">
                 <HBox alignment="CENTER_LEFT" spacing="12" styleClass="boxes-toolbar">
-                    <Button mnemonicParsing="false" onAction="#previousBox" text="‹" styleClass="box-arrow"/>
                     <VBox spacing="1">
                         <Label fx:id="boxName" text="CAJA 1" styleClass="box-name"/>
                         <Label text="ALMACENAMIENTO DEL PC" styleClass="box-kicker"/>
                     </VBox>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label fx:id="occupancy" text="0 / 30" styleClass="box-occupancy"/>
-                    <Button mnemonicParsing="false" onAction="#nextBox" text="›" styleClass="box-arrow"/>
                 </HBox>
 
                 <VBox spacing="18" styleClass="boxes-body">

@@ -27,7 +27,6 @@ $buildToolsDirectory = Join-Path $targetDirectory 'build-tools'
 $portableWixDirectory = Join-Path $buildToolsDirectory 'wix314'
 $iconPng = Join-Path $projectDirectory 'src\main\resources\net\paramada\pokemada\assets\master-v-emblem.png'
 $iconIco = Join-Path $packagingDirectory 'MasterVTournament.ico'
-$dataDumperLauncher = Join-Path $projectDirectory 'packaging\windows\data-dumper.properties'
 
 function Test-Jdk21([string]$jdkCandidate) {
     $releaseFile = Join-Path $jdkCandidate 'release'
@@ -162,7 +161,6 @@ try {
         '--dest', $outputDirectory,
         '--runtime-image', $runtimeDirectory,
         '--module', 'net.paramada.pokemada/net.paramada.pokemada.Launcher',
-        '--add-launcher', "MasterVTournamentDataDumper=$dataDumperLauncher",
         '--icon', $iconIco,
         '--vendor', 'ParaMada',
         '--description', 'Aplicación oficial de Master V Tournament para Pokémon Sun y Moon'

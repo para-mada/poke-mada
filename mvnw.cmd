@@ -54,6 +54,10 @@ if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 
 set ERROR_CODE=0
 
+@REM Project default for local builds and automated test environments.
+@REM An explicitly configured JAVA_HOME still takes precedence.
+if "%JAVA_HOME%" == "" set "JAVA_HOME=C:\Users\xshaf\.jdks\ms-21.0.12.1"
+
 @REM To isolate internal variables from possible post scripts, we use another setlocal
 @setlocal
 
