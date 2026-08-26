@@ -237,7 +237,7 @@ public final class MailboxController {
 
     private static String bundleType(int type) {
         return switch (type) {
-            case 1 -> "RULETA";
+            case 1 -> "SOBRE";
             case 2 -> "COMODÍN";
             default -> "PREMIO";
         };

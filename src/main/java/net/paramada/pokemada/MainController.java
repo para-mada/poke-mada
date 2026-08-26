@@ -106,7 +106,8 @@ public final class MainController {
     @FXML private InventoryController inventoryViewController;
     @FXML private ScrollPane mailboxView;
     @FXML private MailboxController mailboxViewController;
-    @FXML private ScrollPane roulettesView;
+    @FXML private ScrollPane boosterPacksView;
+    @FXML private BoosterPacksController boosterPacksViewController;
     @FXML private HBox emulatorConnectionRow;
     @FXML private Label emulatorConnectionStatus;
     @FXML private ImageView emulatorConnectionIcon;
@@ -313,6 +314,7 @@ public final class MainController {
         mailboxViewController.setProfileImageListener(
                 image -> profilePicture.setImage(image == null ? defaultProfilePicture : image));
         inventoryViewController.configure(this::executeInventoryCommand);
+        boosterPacksViewController.configure(mailboxViewController::refresh);
         saveFileWatcher.start();
         // Battle detection must remain independent from the currently selected screen.
         // Keep battle activation and single/double classification responsive even when the emulator
@@ -382,15 +384,16 @@ public final class MainController {
     }
 
     private void showSection(ToggleButton selectedButton) {
-        boolean showLive = "COMBATES".equals(selectedButton.getText());
-        boolean showBoxes = "CAJAS".equals(selectedButton.getText());
-        boolean showShowdown = "SHOWDOWN".equals(selectedButton.getText());
-        boolean showWildcards = "COMODINES".equals(selectedButton.getText());
-        boolean showInventory = "MOCHILA".equals(selectedButton.getText());
-        boolean showMailbox = "BUZÓN".equals(selectedButton.getText());
-        boolean showRoulettes = "RULETAS".equals(selectedButton.getText());
+        String section = String.valueOf(selectedButton.getUserData());
+        boolean showLive = "live".equals(section);
+        boolean showBoxes = "boxes".equals(section);
+        boolean showShowdown = "showdown".equals(section);
+        boolean showWildcards = "wildcards".equals(section);
+        boolean showInventory = "inventory".equals(section);
+        boolean showMailbox = "mailbox".equals(section);
+        boolean showBoosterPacks = "booster-packs".equals(section);
         boolean showHome = !(showLive || showBoxes || showShowdown || showWildcards || showInventory
-                || showMailbox || showRoulettes);
+                || showMailbox || showBoosterPacks);
         homeView.setManaged(showHome);
         homeView.setVisible(showHome);
         boxesView.setManaged(showBoxes);
@@ -403,8 +406,8 @@ public final class MainController {
         inventoryView.setVisible(showInventory);
         mailboxView.setManaged(showMailbox);
         mailboxView.setVisible(showMailbox);
-        roulettesView.setManaged(showRoulettes);
-        roulettesView.setVisible(showRoulettes);
+        boosterPacksView.setManaged(showBoosterPacks);
+        boosterPacksView.setVisible(showBoosterPacks);
         combatDetailView.setManaged(false);
         combatDetailView.setVisible(false);
         doubleCombatDetailView.setManaged(false);
@@ -428,6 +431,9 @@ public final class MainController {
         }
         if (showInventory) {
             inventoryViewController.refresh();
+        }
+        if (showBoosterPacks) {
+            boosterPacksViewController.refresh();
         }
     }
 
@@ -919,8 +925,8 @@ public final class MainController {
             showdownView.setVisible(false);
             wildcardsView.setManaged(false);
             wildcardsView.setVisible(false);
-            roulettesView.setManaged(false);
-            roulettesView.setVisible(false);
+            boosterPacksView.setManaged(false);
+            boosterPacksView.setVisible(false);
             combatDetailView.setManaged(false);
             combatDetailView.setVisible(false);
             doubleCombatDetailView.setManaged(false);

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll, booster-packs-page"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.paramada.pokemada.BoosterPacksController">
+    <content>
+        <VBox spacing="16" styleClass="content">
+            <padding><Insets bottom="40" left="32" right="32" top="28"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="booster-page-heading">
+                <VBox spacing="2">
+                    <Label text="BOOSTER PACKS" styleClass="booster-eyebrow"/>
+                    <Label text="SOBRES DEL TORNEO" styleClass="booster-page-title"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="statusLabel" text="Cargando sobres…" styleClass="booster-status"/>
+                <Button fx:id="refreshButton" onAction="#refresh" text="ACTUALIZAR" styleClass="booster-text-button"/>
+            </HBox>
+
+            <HBox minHeight="590" spacing="18">
+                <VBox minWidth="220" prefWidth="220" spacing="12" styleClass="booster-pack-rail">
+                    <Label text="COLECCIÓN ACTUAL" styleClass="booster-rail-title"/>
+                    <VBox fx:id="packList" spacing="9"/>
+                    <Region VBox.vgrow="ALWAYS"/>
+                    <Button maxWidth="Infinity" onAction="#loadHistory" text="VER HISTORIAL"
+                            styleClass="booster-secondary-button"/>
+                </VBox>
+
+                <StackPane HBox.hgrow="ALWAYS">
+                    <VBox fx:id="emptyState" alignment="CENTER" spacing="10" styleClass="booster-empty-state">
+                        <Label text="▱" styleClass="booster-empty-icon"/>
+                        <Label text="No hay sobres disponibles" styleClass="booster-empty-title"/>
+                        <Label text="Los sobres activos de tu tramo aparecerán aquí."
+                               styleClass="booster-note"/>
+                    </VBox>
+
+                    <VBox fx:id="detailPanel" spacing="14">
+                        <HBox minHeight="350" spacing="20" styleClass="booster-hero-card">
+                            <StackPane minWidth="310" prefWidth="310" styleClass="booster-art-stage">
+                                <Label text="BOOSTER\nPACK" textAlignment="CENTER" styleClass="booster-art-placeholder"/>
+                                <ImageView fx:id="packArt" fitHeight="285" fitWidth="260" preserveRatio="true" smooth="true"
+                                           styleClass="booster-pack-art"/>
+                            </StackPane>
+                            <VBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
+                                <Label text="TEMPORADA MASTER V · ALOLA" styleClass="booster-season-chip"/>
+                                <Label fx:id="packName" text="Booster Pack" wrapText="true" styleClass="booster-pack-title"/>
+                                <Label fx:id="packDescription" text="" wrapText="true" styleClass="booster-pack-copy"/>
+                                <HBox spacing="9">
+                                    <VBox spacing="2" styleClass="booster-info-chip">
+                                        <Label text="CONTENIDO" styleClass="booster-small-label"/>
+                                        <Label fx:id="contentsLabel" text="—" styleClass="booster-info-value"/>
+                                    </VBox>
+                                    <VBox spacing="2" styleClass="booster-info-chip">
+                                        <Label text="GARANTÍA" styleClass="booster-small-label"/>
+                                        <Label fx:id="guaranteeLabel" text="—" wrapText="true" styleClass="booster-info-value"/>
+                                    </VBox>
+                                </HBox>
+                                <Label fx:id="quantityLabel" text="0 sobres disponibles" styleClass="booster-quantity"/>
+                                <Button fx:id="openButton" onAction="#openPack" text="ABRIR SOBRE"
+                                        styleClass="booster-open-button"/>
+                            </VBox>
+                        </HBox>
+
+                        <HBox alignment="CENTER_LEFT">
+                            <Label text="REVELADO" styleClass="booster-section-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="revealAllButton" onAction="#revealAll" text="REVELAR TODO"
+                                    styleClass="booster-text-button"/>
+                        </HBox>
+                        <VBox fx:id="revealContainer" spacing="8" styleClass="booster-results-panel"/>
+
+                        <HBox spacing="14">
+                            <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="booster-detail-card">
+                                <Label text="CONTENIDO Y PROBABILIDADES" styleClass="booster-section-title"/>
+                                <VBox fx:id="oddsContainer" spacing="5"/>
+                            </VBox>
+                            <VBox minWidth="270" prefWidth="270" spacing="8" styleClass="booster-detail-card">
+                                <Label text="HISTORIAL RECIENTE" styleClass="booster-section-title"/>
+                                <VBox fx:id="historyContainer" spacing="6">
+                                    <Label text="Pulsa «Ver historial» para cargarlo." wrapText="true" styleClass="booster-note"/>
+                                </VBox>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </StackPane>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

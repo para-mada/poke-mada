@@ -1090,56 +1090,93 @@
 .mail-reward-title { -fx-text-fill: #3c3442; -fx-font-size: 12px; -fx-font-weight: bold; }
 .mail-reward-details { -fx-text-fill: #8b8490; -fx-font-size: 9px; -fx-max-width: 360; }
 .mail-reward-sender { -fx-min-width: 110; -fx-text-fill: #645c69; -fx-font-size: 10px; }
-.roulette-page { -fx-min-height: 720; }
-.master-v-gacha .button:disabled { -fx-opacity: 1; }
-.master-banner-rail {
-    -fx-min-height: 610; -fx-padding: 22 14;
-    -fx-background-color: linear-gradient(to bottom, rgba(5, 8, 24, 0.98), rgba(24, 16, 63, 0.98));
-    -fx-background-radius: 22; -fx-border-color: rgba(83, 117, 255, 0.34); -fx-border-radius: 22;
+.booster-packs-page,
+.booster-packs-page > .viewport,
+.booster-packs-page > .corner { -fx-background-color: transparent; }
+.booster-page-heading { -fx-padding: 0 3 3 3; }
+.booster-eyebrow { -fx-text-fill: #7b65d7; -fx-font-size: 8px; -fx-font-weight: bold; }
+.booster-page-title { -fx-text-fill: #2f2835; -fx-font-size: 22px; -fx-font-weight: bold; }
+.booster-status { -fx-text-fill: #766d7d; -fx-font-size: 9px; }
+.booster-status.error { -fx-text-fill: #c73956; }
+.booster-pack-rail {
+    -fx-padding: 19 14; -fx-background-color: linear-gradient(to bottom, #090d29, #211449);
+    -fx-background-radius: 20; -fx-border-color: rgba(101,121,255,0.32); -fx-border-radius: 20;
 }
-.master-rail-heading { -fx-padding: 2 8 13 8; }
-.master-rail-title { -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; }
-.master-rail-subtitle, .master-small-label { -fx-text-fill: #7887bc; -fx-font-size: 8px; -fx-font-weight: bold; }
-.master-banner {
-    -fx-alignment: center-left; -fx-padding: 17 14; -fx-background-radius: 14;
-    -fx-background-color: linear-gradient(to right, rgba(56, 49, 158, 0.28), rgba(121, 42, 211, 0.16));
-    -fx-border-radius: 14; -fx-border-color: rgba(255,255,255,0.07);
-    -fx-text-fill: #aeb8e0; -fx-font-size: 10px; -fx-font-weight: bold;
+.booster-rail-title { -fx-padding: 0 6 6 6; -fx-text-fill: #8997c9; -fx-font-size: 9px; -fx-font-weight: bold; }
+.booster-pack-selector {
+    -fx-alignment: center-left; -fx-padding: 13 12; -fx-background-radius: 12;
+    -fx-background-color: rgba(82,70,161,0.23); -fx-border-color: rgba(255,255,255,0.07);
+    -fx-border-radius: 12; -fx-text-fill: #bfc7ea; -fx-font-size: 9px; -fx-font-weight: bold;
+    -fx-cursor: hand;
 }
-.master-banner.moon-banner { -fx-background-color: linear-gradient(to right, rgba(35,78,186,0.22), rgba(78,39,167,0.14)); }
-.master-banner.z-banner { -fx-background-color: linear-gradient(to right, rgba(92,38,183,0.20), rgba(26,105,209,0.14)); }
-.master-banner.active-banner { -fx-border-color: #8069ff; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(90,90,255,0.48), 15, 0.25, 0, 0); }
-.master-guarantee-card { -fx-padding: 14; -fx-background-color: rgba(255,255,255,0.055); -fx-background-radius: 13; }
-.master-guarantee-value { -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; }
-.master-pity-bar > .track { -fx-background-color: rgba(255,255,255,0.09); -fx-background-radius: 5; }
-.master-pity-bar > .bar { -fx-background-color: linear-gradient(to right, #3b70ff, #9827df); -fx-background-radius: 5; }
-.master-wallet { -fx-padding: 10 14; -fx-background-color: rgba(5,8,25,0.93); -fx-background-radius: 15; -fx-border-color: rgba(93,125,255,0.20); -fx-border-radius: 15; }
-.master-ticket-icon { -fx-text-fill: #f2f5ff; -fx-font-size: 22px; -fx-effect: dropshadow(gaussian, #577bff, 9, 0.3, 0, 0); }
-.master-wallet-value { -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; }
-.master-season-chip { -fx-padding: 6 10; -fx-background-color: rgba(104,67,233,0.18); -fx-background-radius: 13; -fx-text-fill: #aa9cff; -fx-font-size: 8px; -fx-font-weight: bold; }
-.master-portal-card {
-    -fx-background-color: radial-gradient(center 50% 44%, radius 72%, #20245e 0%, #11143b 45%, #030611 100%);
-    -fx-background-radius: 25; -fx-border-color: rgba(88,119,255,0.40); -fx-border-radius: 25;
-    -fx-effect: dropshadow(gaussian, rgba(2,3,15,0.75), 30, 0.2, 0, 11);
+.booster-pack-selector:hover { -fx-background-color: rgba(95,80,190,0.36); }
+.booster-pack-selector.selected {
+    -fx-background-color: linear-gradient(to right, rgba(55,86,220,0.52), rgba(127,51,205,0.42));
+    -fx-border-color: #8069ff; -fx-text-fill: white;
 }
-.master-orbit { -fx-fill: transparent; -fx-stroke: rgba(104,132,255,0.25); -fx-stroke-width: 1.2; }
-.master-orbit.inner-orbit { -fx-stroke: rgba(164,84,255,0.32); -fx-stroke-dash-array: 5 8; }
-.master-orbit.outer-orbit { -fx-stroke-dash-array: 2 10; }
-.master-prize-orb { -fx-alignment: center; -fx-min-width: 42; -fx-min-height: 42; -fx-background-radius: 22; -fx-font-size: 16px; -fx-font-weight: bold; }
-.common-orb { -fx-background-color: #69738f; -fx-text-fill: white; }
-.rare-orb { -fx-background-color: #347cff; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, #347cff, 12, 0.25, 0, 0); }
-.epic-orb { -fx-background-color: #913bec; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, #913bec, 14, 0.3, 0, 0); }
-.legendary-orb { -fx-background-color: #f2f5ff; -fx-text-fill: #322266; -fx-effect: dropshadow(gaussian, #9e80ff, 18, 0.38, 0, 0); }
-.master-event-logo { -fx-effect: dropshadow(gaussian, rgba(75,83,255,0.70), 24, 0.28, 0, 0); }
-.master-portal-title { -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; }
-.master-portal-copy { -fx-text-fill: #aeb6db; -fx-font-size: 11px; }
-.master-summon-button { -fx-padding: 12 42; -fx-background-color: linear-gradient(to right, #315dff, #922be3); -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(83,64,255,0.55), 18, 0.24, 0, 4); }
-.master-rarity { -fx-padding: 5 8; -fx-background-radius: 11; -fx-font-size: 8px; -fx-font-weight: bold; }
-.common-rarity { -fx-background-color: rgba(120,128,151,0.22); -fx-text-fill: #b7bdcb; }
-.rare-rarity { -fx-background-color: rgba(51,124,255,0.18); -fx-text-fill: #73a9ff; }
-.epic-rarity { -fx-background-color: rgba(145,59,236,0.20); -fx-text-fill: #c18aff; }
-.legendary-rarity { -fx-background-color: rgba(220,225,255,0.18); -fx-text-fill: #e7e9ff; }
-.master-text-button { -fx-background-color: transparent; -fx-text-fill: #aeb8df; -fx-font-size: 9px; -fx-font-weight: bold; }
+.booster-secondary-button, .booster-text-button {
+    -fx-background-color: transparent; -fx-border-color: rgba(153,164,220,0.35); -fx-border-radius: 15;
+    -fx-padding: 7 12; -fx-text-fill: #8d80c8; -fx-font-size: 8px; -fx-font-weight: bold; -fx-cursor: hand;
+}
+.booster-pack-rail .booster-secondary-button { -fx-text-fill: #c7cff1; }
+.booster-empty-state { -fx-min-height: 500; -fx-background-color: white; -fx-background-radius: 20; }
+.booster-empty-icon { -fx-text-fill: #8a74df; -fx-font-size: 54px; }
+.booster-empty-title { -fx-text-fill: #3e3545; -fx-font-size: 16px; -fx-font-weight: bold; }
+.booster-hero-card {
+    -fx-padding: 20; -fx-background-color: radial-gradient(center 28% 42%, radius 85%, #292a72 0%, #141641 50%, #070918 100%);
+    -fx-background-radius: 22; -fx-border-color: rgba(95,122,255,0.44); -fx-border-radius: 22;
+    -fx-effect: dropshadow(gaussian, rgba(17,12,48,0.30), 24, 0.18, 0, 8);
+}
+.booster-art-stage {
+    -fx-background-color: rgba(255,255,255,0.035); -fx-background-radius: 17;
+    -fx-border-color: rgba(255,255,255,0.07); -fx-border-radius: 17;
+}
+.booster-art-placeholder { -fx-text-fill: rgba(160,175,235,0.18); -fx-font-size: 30px; -fx-font-weight: bold; }
+.booster-pack-art { -fx-effect: dropshadow(gaussian, rgba(90,88,255,0.72), 24, 0.26, 0, 5); }
+.booster-season-chip {
+    -fx-padding: 6 10; -fx-background-color: rgba(118,76,229,0.22); -fx-background-radius: 12;
+    -fx-text-fill: #b5a7ff; -fx-font-size: 8px; -fx-font-weight: bold;
+}
+.booster-pack-title { -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; }
+.booster-pack-copy { -fx-text-fill: #b7c0e3; -fx-font-size: 10px; -fx-max-width: 390; }
+.booster-info-chip { -fx-padding: 9 11; -fx-background-color: rgba(255,255,255,0.06); -fx-background-radius: 10; }
+.booster-small-label { -fx-text-fill: #8390c1; -fx-font-size: 7px; -fx-font-weight: bold; }
+.booster-info-value { -fx-text-fill: #e7eaff; -fx-font-size: 9px; -fx-font-weight: bold; -fx-max-width: 170; }
+.booster-quantity { -fx-text-fill: #b9adff; -fx-font-size: 11px; -fx-font-weight: bold; }
+.booster-open-button {
+    -fx-padding: 12 38; -fx-background-color: linear-gradient(to right, #315dff, #922be3);
+    -fx-background-radius: 22; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(83,64,255,0.48), 16, 0.22, 0, 4); -fx-cursor: hand;
+}
+.booster-open-button:disabled { -fx-opacity: 0.46; -fx-cursor: default; }
+.booster-section-title { -fx-text-fill: #514758; -fx-font-size: 9px; -fx-font-weight: bold; }
+.booster-results-panel { -fx-padding: 4 0; }
+.booster-result-card {
+    -fx-alignment: center-left; -fx-padding: 10 12; -fx-background-color: white; -fx-background-radius: 11;
+    -fx-border-color: #e5dfea; -fx-border-radius: 11; -fx-border-width: 1 1 1 3;
+}
+.booster-result-position { -fx-text-fill: #938a99; -fx-font-size: 10px; -fx-font-weight: bold; }
+.booster-result-name { -fx-text-fill: #38303e; -fx-font-size: 11px; -fx-font-weight: bold; }
+.booster-result-rarity { -fx-font-size: 7px; -fx-font-weight: bold; }
+.rarity-common { -fx-text-fill: #747c91; }
+.rarity-rare { -fx-text-fill: #347cff; }
+.rarity-epic { -fx-text-fill: #913bec; }
+.rarity-master { -fx-text-fill: #b48a18; }
+.rarity-border-common { -fx-border-color: #e5dfea #e5dfea #e5dfea #7b8293; }
+.rarity-border-rare { -fx-border-color: #e5dfea #e5dfea #e5dfea #347cff; }
+.rarity-border-epic { -fx-border-color: #e5dfea #e5dfea #e5dfea #913bec; }
+.rarity-border-master { -fx-border-color: #e5dfea #e5dfea #e5dfea #d3a629; }
+.booster-detail-card {
+    -fx-padding: 14; -fx-background-color: #f8f5fa; -fx-background-radius: 14;
+    -fx-border-color: #e7e0eb; -fx-border-radius: 14;
+}
+.booster-subheading { -fx-padding: 6 0 2 0; -fx-text-fill: #655b6b; -fx-font-size: 9px; -fx-font-weight: bold; }
+.booster-odds-row { -fx-padding: 5 7; -fx-background-color: white; -fx-background-radius: 8; }
+.booster-odds-name { -fx-text-fill: #514957; -fx-font-size: 8px; }
+.booster-odds-value { -fx-text-fill: #6d4dc3; -fx-font-size: 8px; -fx-font-weight: bold; }
+.booster-history-row { -fx-padding: 8 9; -fx-background-color: white; -fx-background-radius: 8; }
+.booster-history-name { -fx-text-fill: #433a49; -fx-font-size: 9px; -fx-font-weight: bold; }
+.booster-history-meta, .booster-note { -fx-text-fill: #877e8d; -fx-font-size: 8px; }
 
 /* Poke Vial */
 .poke-vial-button {

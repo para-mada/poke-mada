@@ -29,7 +29,7 @@ en desarrollo; las secciones que todavía son conceptuales se identifican claram
 | Showdown | Placeholder | Layout preparado; integración y cálculos avanzados pendientes. |
 | Comodines | Placeholder | Catálogo visual preparado; falta la API de inventario. |
 | Buzón | Placeholder | Tabla y estado vacío preparados; falta la cuenta del entrenador. |
-| Ruletas | Placeholder visual | Portal gacha con identidad Master V; no realiza invocaciones todavía. |
+| Booster Packs | Funcional | Catálogo de sobres, probabilidades, apertura idempotente, revelado e historial respaldados por el servidor. |
 
 > [!IMPORTANT]
 > Las direcciones investigadas son exclusivas de las versiones soportadas de Pokémon Sun/Moon.
@@ -45,7 +45,7 @@ en desarrollo; las secciones que todavía son conceptuales se identifican claram
 - **Showdown:** preparación y comparación futura de enfrentamientos.
 - **Comodines:** inventario futuro de cartas/comodines.
 - **Buzón:** recompensas y mensajes futuros.
-- **Ruletas:** portal de invocaciones del torneo.
+- **Sobres:** Booster Packs del torneo con contenido y probabilidades configurados por tramo.
 - **Estado de MadaLime:** el avatar pixel-art recupera color al conectarse. La conexión se muestra
   aquí, sin repetir indicadores en cada pantalla.
 
@@ -110,17 +110,18 @@ uso dependen de una futura API de cuenta/inventario.
 Incluye columnas para tipo, título y remitente, además de filtros y estado vacío. Las recompensas se
 activarán cuando exista integración con la cuenta del entrenador.
 
-### Ruletas
+### Booster Packs / Sobres
 
-Concepto gacha adaptado a Alola y Master V:
+Sistema de sobres adaptado a Alola y Master V:
 
-- portales/temporadas;
-- pases de invocación;
-- garantía o *pity*;
+- diseños por temporada/tramo;
+- inventario de sobres sin abrir;
+- varias recompensas por apertura y posiciones garantizadas;
 - rarezas común, rara, épica y maestra;
 - probabilidades e historial.
 
-Todos sus controles permanecen deshabilitados hasta definir reglas, persistencia y backend.
+El servidor decide y persiste cada apertura de forma idempotente. El cliente revela el resultado y
+envía las recompensas al buzón para su canje.
 
 ## Registro de combate
 
@@ -259,7 +260,7 @@ Consulta [tools/data-dumper/README.md](tools/data-dumper/README.md) para paráme
 
 - completar integración de Showdown y análisis de matchups;
 - conectar cuenta, buzón y comodines;
-- definir economía, probabilidades y persistencia de Ruletas;
+- definir el balance y catálogo inicial de Booster Packs;
 - investigar perfiles separados para Ultra Sun/Ultra Moon;
 - ampliar pruebas de UI y capturas visuales de regresión.
 

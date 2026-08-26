@@ -163,6 +163,73 @@ public final class ServerClient {
         return send(request).thenApply(ignored -> null);
     }
 
+    public CompletableFuture<List<BoosterPackSummary>> boosterPacks(String token) {
+        return get("api/booster-packs/", token).thenApply(ServerClient::boosterPacksFromBody);
+    }
+
+    static List<BoosterPackSummary> boosterPacksFromBody(String body) {
+        return array(Json.parse(body)).stream().map(value -> boosterPackSummary(object(value))).toList();
+    }
+
+    public CompletableFuture<BoosterPackDetail> boosterPack(String token, String code) {
+        return get("api/booster-packs/" + encode(code) + "/", token)
+                .thenApply(ServerClient::boosterPackDetailFromBody);
+    }
+
+    static BoosterPackDetail boosterPackDetailFromBody(String body) {
+        Map<String, Object> json = object(Json.parse(body));
+        BoosterPackSummary summary = boosterPackSummary(json);
+        List<PackOddsSlot> slots = arrayOrEmpty(json.get("slots")).stream().map(value -> {
+            Map<String, Object> slot = object(value);
+            List<PackOddsEntry> entries = arrayOrEmpty(slot.get("entries")).stream().map(raw -> {
+                Map<String, Object> entry = object(raw);
+                return new PackOddsEntry(textOr(entry.get("name"), "Recompensa"),
+                        textOr(entry.get("rarity"), "COMMON"), nullableText(entry.get("image_url")),
+                        decimal(entry.get("probability")));
+            }).toList();
+            return new PackOddsSlot(integer(slot.get("position")), textOr(slot.get("label"), ""),
+                    textOr(slot.get("pool"), ""), entries);
+        }).toList();
+        return new BoosterPackDetail(summary, slots);
+    }
+
+    public CompletableFuture<PackOpening> openBoosterPack(String token, String code, UUID idempotencyKey) {
+        HttpRequest request = authenticated("api/booster-packs/" + encode(code) + "/open/", token)
+                .header("Idempotency-Key", idempotencyKey.toString())
+                .POST(HttpRequest.BodyPublishers.noBody()).build();
+        return send(request).thenApply(ServerClient::packOpeningFromBody);
+    }
+
+    public CompletableFuture<List<PackOpening>> packOpenings(String token) {
+        return get("api/booster-packs/openings/", token).thenApply(body ->
+                array(Json.parse(body)).stream().map(value -> packOpening(object(value))).toList());
+    }
+
+    static PackOpening packOpeningFromBody(String body) {
+        return packOpening(object(Json.parse(body)));
+    }
+
+    private static BoosterPackSummary boosterPackSummary(Map<String, Object> json) {
+        return new BoosterPackSummary(text(json.get("code"), "code"), textOr(json.get("name"), "Sobre"),
+                textOr(json.get("description"), ""), nullableText(json.get("art_url")),
+                integer(json.get("quantity")), integer(json.get("cards_per_pack")),
+                textOr(json.get("guarantee_label"), ""), integer(json.get("configuration_version")));
+    }
+
+    private static PackOpening packOpening(Map<String, Object> json) {
+        List<PackOpeningResult> results = arrayOrEmpty(json.get("results")).stream().map(value -> {
+            Map<String, Object> result = object(value);
+            return new PackOpeningResult(integer(result.get("position")),
+                    textOr(result.get("name"), "Recompensa"), textOr(result.get("rarity"), "COMMON"),
+                    nullableText(result.get("image_url")));
+        }).toList();
+        return new PackOpening(UUID.fromString(text(json.get("id"), "id")),
+                text(json.get("pack_code"), "pack_code"), textOr(json.get("pack_name"), "Sobre"),
+                textOr(json.get("state"), "COMPLETED"), integer(json.get("remaining_quantity")),
+                nullableText(json.get("reward_bundle_id")), instantOrNull(json.get("created_at")),
+                results, Boolean.TRUE.equals(json.get("replayed")));
+    }
+
     public CompletableFuture<List<VirtualItemStack>> virtualInventory(String token) {
         return get("api/virtual-inventory/", token).thenApply(ServerClient::virtualInventoryFromBody);
     }
@@ -320,6 +387,10 @@ public final class ServerClient {
         return value instanceof Number number ? number.longValue() : 0L;
     }
 
+    private static double decimal(Object value) {
+        return value instanceof Number number ? number.doubleValue() : 0.0;
+    }
+
     private static Instant instantOrNull(Object value) {
         if (!(value instanceof String string) || string.isBlank()) return null;
         try {
@@ -348,6 +419,22 @@ public final class ServerClient {
                                List<RewardItem> rewards) { }
 
     public record RewardItem(int type, int quantity, String pokemonPid, String itemId, String wildcardId) { }
+
+    public record BoosterPackSummary(String code, String name, String description, String artUrl,
+                                     int quantity, int cardsPerPack, String guaranteeLabel,
+                                     int configurationVersion) { }
+
+    public record BoosterPackDetail(BoosterPackSummary summary, List<PackOddsSlot> slots) { }
+
+    public record PackOddsSlot(int position, String label, String pool, List<PackOddsEntry> entries) { }
+
+    public record PackOddsEntry(String name, String rarity, String imageUrl, double probability) { }
+
+    public record PackOpening(UUID id, String packCode, String packName, String state,
+                              int remainingQuantity, String rewardBundleId, Instant createdAt,
+                              List<PackOpeningResult> results, boolean replayed) { }
+
+    public record PackOpeningResult(int position, String name, String rarity, String imageUrl) { }
 
     public record VirtualItemStack(String code, String name, String description, String spriteUrl,
                                    String pocket, int quantity,
