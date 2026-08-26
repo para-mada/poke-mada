@@ -133,6 +133,8 @@ Escritorio:
 - `makemigrations --dry-run --check`: no hay cambios de modelos sin migración tras añadir el tramo.
 - Suite ampliada tras el primer catálogo: 14 pruebas, 0 fallos; incluye instalación repetible y
   concesión por management command. Las pruebas HTTP aíslan su URLConf sin pisar el del Admin.
+- Publicado en servidor como `877153f` sobre `origin/codex/easy-deploy`; documentación publicada
+  inicialmente como `c06e7c4` sobre `origin/master` de PokeMada.
 
 ## Problemas sin resolver
 
