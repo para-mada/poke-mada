@@ -1,4 +1,4 @@
-package net.paramada.pokemada;
+package net.paramada.pokemada.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -61,6 +61,11 @@ public final class PokemonDetailController {
 
     public void show(int species, String nickname, int level, String natureName, int abilityId, int itemId,
                      int[] realStats, int[] moveIds) {
+        show(species, "0", nickname, level, natureName, abilityId, itemId, realStats, moveIds);
+    }
+
+    public void show(int species, String form, String nickname, int level, String natureName, int abilityId, int itemId,
+                     int[] realStats, int[] moveIds) {
         renderedSpecies = species;
         root.setManaged(true);
         root.setVisible(true);
@@ -85,10 +90,10 @@ public final class PokemonDetailController {
             item.setText("Objeto: #" + itemId);
             itemTooltip.setText("Sin descripción disponible.");
         });
-        int[] types = PokemonTypeDex.forSpecies(species);
+        int[] types = PokemonTypeDex.forSpecies(species, form);
         setTypeIcon(typeOne, types[0], true);
         setTypeIcon(typeTwo, types[1], types[1] != types[0]);
-        renderStats(PokemonBaseStats.allForSpecies(species), realStats);
+        renderStats(PokemonBaseStats.allForSpecies(species, form), realStats);
         renderMatchups(types[0], types[1]);
         renderMoves(moveIds);
         spriteCache.load(species).thenAccept(image -> javafx.application.Platform.runLater(() -> {

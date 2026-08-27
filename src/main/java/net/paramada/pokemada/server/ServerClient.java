@@ -99,6 +99,20 @@ public final class ServerClient {
         });
     }
 
+    public CompletableFuture<CatalogResponse> gameDataCatalog(String token, String etag) {
+        HttpRequest.Builder builder = authenticated("api/game-data/catalog/", token).GET();
+        if (etag != null && !etag.isBlank()) builder.header("If-None-Match", etag);
+        return http.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                .thenApply(response -> {
+                    String responseEtag = response.headers().firstValue("ETag").orElse(etag == null ? "" : etag);
+                    if (response.statusCode() == 304) return new CatalogResponse(false, responseEtag, "");
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        return new CatalogResponse(true, responseEtag, response.body());
+                    }
+                    throw new ServerException(response.statusCode(), response.body());
+                });
+    }
+
     static Trainer trainerFromBody(String body) {
         if (body == null || body.isBlank() || "null".equalsIgnoreCase(body.trim())) {
             return new Trainer(0, "Entrenador");
@@ -116,7 +130,7 @@ public final class ServerClient {
                 integer(json.get("special_attack")), integer(json.get("special_defense")), integer(json.get("speed"))};
         int[] moves = arrayOrEmpty(json.get("moves")).stream().limit(4).mapToInt(value ->
                 value instanceof Map<?, ?> ? integer(object(value).get("index")) : integer(value)).toArray();
-        return new Pokemon(integer(json.get("id")), integer(json.get("dex_number")), textOr(json.get("mote"),
+        return new Pokemon(integer(json.get("id")), integer(json.get("dex_number")), textOr(json.get("form"), "0"), textOr(json.get("mote"),
                 textOr(json.get("species"), "Pokémon")), integer(json.get("level")),
                 integer(json.get("cur_hp")), integer(json.get("max_hp")), textOr(json.get("nature_name"), "Desconocida"),
                 integer(json.get("ability")), integer(json.get("held_item")), stats, moves);
@@ -404,7 +418,7 @@ public final class ServerClient {
 
     public record BoxSummary(int number, String name) { }
 
-    public record Pokemon(int id, int dexNumber, String name, int level, int currentHp, int maxHp,
+    public record Pokemon(int id, int dexNumber, String form, String name, int level, int currentHp, int maxHp,
                           String natureName, int ability, int heldItem, int[] stats, int[] moves) { }
 
     public record BoxSlot(int slot, Pokemon pokemon) { }
@@ -412,6 +426,8 @@ public final class ServerClient {
     public record Box(int number, String name, List<BoxSlot> slots) { }
 
     public record Profile(String name, String pictureUrl) { }
+
+    public record CatalogResponse(boolean modified, String etag, String body) { }
 
     public record Notification(long id, String message, Instant createdAt) { }
 

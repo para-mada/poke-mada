@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll, inventory-page"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="net.paramada.pokemada.InventoryController">
+            fx:controller="net.paramada.pokemada.controller.InventoryController">
     <fx:define><ToggleGroup fx:id="pocketGroup"/></fx:define>
     <content>
         <VBox spacing="18" styleClass="content">
@@ -53,15 +53,16 @@
                         </HBox>
                     </HBox>
 
-                    <HBox minHeight="390" spacing="16">
+                    <HBox minHeight="390" prefHeight="390" maxHeight="390" spacing="16">
                         <VBox prefWidth="315" spacing="8" styleClass="inventory-column-card">
                             <Label text="EQUIPO" styleClass="inventory-column-heading"/>
                             <VBox fx:id="teamContainer" spacing="5" VBox.vgrow="ALWAYS"/>
                         </VBox>
                         <VBox spacing="8" styleClass="inventory-column-card" HBox.hgrow="ALWAYS">
                             <Label text="OBJETOS" styleClass="inventory-column-heading"/>
-                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="inventory-list-scroll"
-                                        VBox.vgrow="ALWAYS">
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED"
+                                        pannable="true" prefViewportHeight="340"
+                                        styleClass="inventory-list-scroll" VBox.vgrow="ALWAYS">
                                 <content><VBox fx:id="itemsContainer" spacing="7"/></content>
                             </ScrollPane>
                         </VBox>

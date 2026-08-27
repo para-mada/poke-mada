@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
-            fx:controller="net.paramada.pokemada.SOSCombatPanelController">
+            fx:controller="net.paramada.pokemada.controller.SOSCombatPanelController">
     <content>
         <VBox maxWidth="Infinity" spacing="18" styleClass="content, combat-detail-content, sos-combat-content">
             <padding><Insets bottom="44" left="34" right="34" top="28"/></padding>

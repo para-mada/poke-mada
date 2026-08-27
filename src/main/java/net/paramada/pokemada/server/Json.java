@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Small, dependency-free JSON reader for the server's response DTOs. */
-final class Json {
+public final class Json {
     private final String source;
     private int position;
 
@@ -14,7 +14,7 @@ final class Json {
         this.source = source;
     }
 
-    static Object parse(String source) {
+    public static Object parse(String source) {
         Json reader = new Json(source == null ? "" : source);
         Object value = reader.value();
         reader.whitespace();

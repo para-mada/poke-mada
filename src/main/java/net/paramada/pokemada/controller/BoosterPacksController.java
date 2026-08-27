@@ -1,4 +1,4 @@
-package net.paramada.pokemada;
+package net.paramada.pokemada.controller;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;

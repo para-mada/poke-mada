@@ -160,7 +160,7 @@ try {
         '--app-version', $Version,
         '--dest', $outputDirectory,
         '--runtime-image', $runtimeDirectory,
-        '--module', 'net.paramada.pokemada/net.paramada.pokemada.Launcher',
+        '--module', 'net.paramada.pokemada/net.paramada.pokemada.launcher.Launcher',
         '--icon', $iconIco,
         '--vendor', 'ParaMada',
         '--description', 'Aplicación oficial de Master V Tournament para Pokémon Sun y Moon'

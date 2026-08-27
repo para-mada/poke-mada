@@ -12,13 +12,17 @@ import java.util.Optional;
 /** Localized move metadata through Generation VII, loaded once from a bundled catalog. */
 public final class PokemonMoveDex {
     private static final String RESOURCE = "/net/paramada/pokemada/assets/moves-gen7.tsv";
-    private static final Map<Integer, MoveInfo> MOVES = load();
+    private static volatile Map<Integer, MoveInfo> moves = load();
 
     private PokemonMoveDex() {
     }
 
     public static Optional<MoveInfo> find(int moveId) {
-        return Optional.ofNullable(MOVES.get(moveId));
+        return Optional.ofNullable(moves.get(moveId));
+    }
+
+    static void install(Map<Integer, MoveInfo> values) {
+        moves = Map.copyOf(values);
     }
 
     private static Map<Integer, MoveInfo> load() {

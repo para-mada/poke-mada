@@ -12,7 +12,7 @@
 
 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="net.paramada.pokemada.BoxesController">
+            fx:controller="net.paramada.pokemada.controller.BoxesController">
     <content>
         <VBox alignment="TOP_CENTER" spacing="14" styleClass="boxes-content">
             <padding><Insets bottom="42" left="38" right="38" top="32"/></padding>

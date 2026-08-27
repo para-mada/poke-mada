@@ -13,21 +13,43 @@ public final class PokemonBaseStats {
     private static final String PAST_RESOURCE =
             "/net/paramada/pokemada/assets/pokemon-base-stats-past.csv";
     private static final int TARGET_GENERATION = 7;
-    private static final Map<Integer, int[]> STATS_BY_SPECIES = load();
+    private static volatile Map<Integer, int[]> statsBySpecies = load();
+    private static volatile Map<String, int[]> statsByForm = Map.of();
 
     private PokemonBaseStats() {
     }
 
     /** Returns Attack, Defense, Special Attack, Special Defense and Speed. */
     public static int[] forSpecies(int species) {
-        int[] stats = STATS_BY_SPECIES.get(species);
+        int[] stats = statsBySpecies.get(species);
         return stats == null ? new int[5] : java.util.Arrays.copyOfRange(stats, 1, 6);
     }
 
     /** Returns HP, Attack, Defense, Special Attack, Special Defense and Speed. */
     public static int[] allForSpecies(int species) {
-        int[] stats = STATS_BY_SPECIES.get(species);
+        int[] stats = statsBySpecies.get(species);
         return stats == null ? new int[6] : stats.clone();
+    }
+
+    public static int[] allForSpecies(int species, String form) {
+        int[] stats = statsByForm.get(species + "/" + normalizeForm(form));
+        return stats == null ? allForSpecies(species) : stats.clone();
+    }
+
+    static void install(Map<Integer, int[]> values) {
+        Map<Integer, int[]> copy = new HashMap<>();
+        values.forEach((key, value) -> copy.put(key, value.clone()));
+        statsBySpecies = Map.copyOf(copy);
+    }
+
+    static void installForms(Map<String, int[]> values) {
+        Map<String, int[]> copy = new HashMap<>();
+        values.forEach((key, value) -> copy.put(key, value.clone()));
+        statsByForm = Map.copyOf(copy);
+    }
+
+    private static String normalizeForm(String form) {
+        return form == null || form.isBlank() ? "0" : form.toLowerCase(java.util.Locale.ROOT);
     }
 
     private static Map<Integer, int[]> load() {

@@ -21,7 +21,7 @@
 
 <BorderPane prefHeight="800.0" prefWidth="1280.0" styleClass="app-shell"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="net.paramada.pokemada.MainController">
+            fx:controller="net.paramada.pokemada.controller.MainController">
     <fx:define>
         <ToggleGroup fx:id="navigationGroup"/>
     </fx:define>
@@ -57,10 +57,6 @@
                     <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="CAJAS" userData="boxes"
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
                         <graphic><Label text="▣" styleClass="nav-icon"/></graphic>
-                    </ToggleButton>
-                    <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="SHOWDOWN" userData="showdown"
-                                  toggleGroup="$navigationGroup" styleClass="nav-item">
-                        <graphic><Label text="◆" styleClass="nav-icon"/></graphic>
                     </ToggleButton>
                     <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="COMODINES" userData="wildcards"
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
@@ -297,7 +293,6 @@
             </ScrollPane>
 
             <fx:include fx:id="boxesView" source="boxes-view.fxml" managed="false" visible="false"/>
-            <fx:include fx:id="showdownView" source="showdown-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="wildcardsView" source="wildcards-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="inventoryView" source="inventory-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="mailboxView" source="mailbox-view.fxml" managed="false" visible="false"/>

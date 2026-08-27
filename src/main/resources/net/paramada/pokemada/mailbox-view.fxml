@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="net.paramada.pokemada.MailboxController">
+            fx:controller="net.paramada.pokemada.controller.MailboxController">
     <content>
         <StackPane minHeight="760" styleClass="mail-page">
             <VBox fx:id="loginSection" alignment="CENTER" maxWidth="430" spacing="22" styleClass="mail-login-section">

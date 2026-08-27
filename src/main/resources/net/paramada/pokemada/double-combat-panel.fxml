@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:id="doubleCombatPanel" fitToWidth="true" hbarPolicy="NEVER"
-            styleClass="content-scroll" fx:controller="net.paramada.pokemada.DoubleCombatPanelController">
+            styleClass="content-scroll" fx:controller="net.paramada.pokemada.controller.DoubleCombatPanelController">
     <content>
         <VBox fx:id="doubleCombatContent" maxWidth="Infinity" spacing="18" styleClass="content, combat-detail-content">
             <padding><Insets bottom="44" left="30" right="30" top="28"/></padding>

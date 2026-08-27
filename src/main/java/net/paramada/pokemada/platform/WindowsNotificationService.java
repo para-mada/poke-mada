@@ -1,4 +1,4 @@
-package net.paramada.pokemada;
+package net.paramada.pokemada.platform;
 
 import javax.imageio.ImageIO;
 import java.awt.AWTException;
@@ -9,14 +9,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /** Displays native Windows notifications through a persistent system-tray icon. */
-final class WindowsNotificationService implements AutoCloseable {
+public final class WindowsNotificationService implements AutoCloseable {
     private static final System.Logger LOGGER = System.getLogger(WindowsNotificationService.class.getName());
     private static final String ICON_RESOURCE = "/net/paramada/pokemada/assets/master-v-emblem.png";
 
     private TrayIcon trayIcon;
     private boolean initializationAttempted;
 
-    synchronized void show(String title, String message) {
+    public synchronized void show(String title, String message) {
         TrayIcon icon = trayIcon();
         if (icon == null) return;
         icon.displayMessage(title, message, TrayIcon.MessageType.INFO);

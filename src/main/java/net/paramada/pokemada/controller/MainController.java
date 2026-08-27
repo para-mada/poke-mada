@@ -1,4 +1,4 @@
-package net.paramada.pokemada;
+package net.paramada.pokemada.controller;
 
 import javafx.application.Platform;
 import javafx.animation.KeyFrame;
@@ -30,6 +30,7 @@ import net.paramada.pokemada.battlelog.BattleLogStore;
 import net.paramada.pokemada.features.vial.PokeVial;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;
 import net.paramada.pokemada.game.assets.PokemonSpeciesDex;
+import net.paramada.pokemada.game.assets.GameDataCatalogSync;
 import net.paramada.pokemada.game.PokemonGameConfig;
 import net.paramada.pokemada.game.save.SaveFileWatcher;
 import net.paramada.pokemada.game.official.shared.crypto.PokemonCrypto;
@@ -38,6 +39,7 @@ import net.paramada.pokemada.game.official.sm.SmMemoryMap;
 import net.paramada.pokemada.game.official.sm.SmPartyHealer;
 import net.paramada.pokemada.game.save.SmSaveEditor;
 import net.paramada.pokemada.protocol.citra.CitraUdpClient;
+import net.paramada.pokemada.platform.WindowsNotificationService;
 import net.paramada.pokemada.server.NotificationConnection;
 import net.paramada.pokemada.server.ServerClient;
 import net.paramada.pokemada.server.ServerSettings;
@@ -100,7 +102,6 @@ public final class MainController {
     @FXML
     private ScrollPane boxesView;
     @FXML private BoxesController boxesViewController;
-    @FXML private ScrollPane showdownView;
     @FXML private ScrollPane wildcardsView;
     @FXML private ScrollPane inventoryView;
     @FXML private InventoryController inventoryViewController;
@@ -387,19 +388,16 @@ public final class MainController {
         String section = String.valueOf(selectedButton.getUserData());
         boolean showLive = "live".equals(section);
         boolean showBoxes = "boxes".equals(section);
-        boolean showShowdown = "showdown".equals(section);
         boolean showWildcards = "wildcards".equals(section);
         boolean showInventory = "inventory".equals(section);
         boolean showMailbox = "mailbox".equals(section);
         boolean showBoosterPacks = "booster-packs".equals(section);
-        boolean showHome = !(showLive || showBoxes || showShowdown || showWildcards || showInventory
+        boolean showHome = !(showLive || showBoxes || showWildcards || showInventory
                 || showMailbox || showBoosterPacks);
         homeView.setManaged(showHome);
         homeView.setVisible(showHome);
         boxesView.setManaged(showBoxes);
         boxesView.setVisible(showBoxes);
-        showdownView.setManaged(showShowdown);
-        showdownView.setVisible(showShowdown);
         wildcardsView.setManaged(showWildcards);
         wildcardsView.setVisible(showWildcards);
         inventoryView.setManaged(showInventory);
@@ -921,8 +919,6 @@ public final class MainController {
             liveView.setVisible(false);
             boxesView.setManaged(false);
             boxesView.setVisible(false);
-            showdownView.setManaged(false);
-            showdownView.setVisible(false);
             wildcardsView.setManaged(false);
             wildcardsView.setVisible(false);
             boosterPacksView.setManaged(false);
@@ -941,6 +937,7 @@ public final class MainController {
             mailboxView.setVisible(true);
             return;
         }
+        GameDataCatalogSync.synchronize(ServerSettings.load());
         startNotifications();
         homeNavigationButton.setSelected(true);
         showSection(homeNavigationButton);
@@ -1319,7 +1316,7 @@ public final class MainController {
     }
 
     private void openServerPokemonDetails(net.paramada.pokemada.server.ServerClient.Pokemon pokemon) {
-        pokemonDetailController.show(pokemon.dexNumber(), pokemon.name(), pokemon.level(),
+        pokemonDetailController.show(pokemon.dexNumber(), pokemon.form(), pokemon.name(), pokemon.level(),
                 pokemon.natureName(), pokemon.ability(), pokemon.heldItem(), pokemon.stats(), pokemon.moves());
     }
 

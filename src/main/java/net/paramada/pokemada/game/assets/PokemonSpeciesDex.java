@@ -11,13 +11,17 @@ import java.util.Optional;
 /** Offline species-name catalog for the National Pokédex through generation 7. */
 public final class PokemonSpeciesDex {
     private static final String RESOURCE = "/net/paramada/pokemada/assets/pokemon-species-gen7.tsv";
-    private static final Map<Integer, String> NAMES = load();
+    private static volatile Map<Integer, String> names = load();
 
     private PokemonSpeciesDex() {
     }
 
     public static Optional<String> find(int species) {
-        return Optional.ofNullable(NAMES.get(species));
+        return Optional.ofNullable(names.get(species));
+    }
+
+    static void install(Map<Integer, String> values) {
+        names = Map.copyOf(values);
     }
 
     public static String nameOrFallback(int species) {

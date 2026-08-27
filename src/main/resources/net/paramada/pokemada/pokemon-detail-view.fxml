@@ -14,7 +14,7 @@
            onMouseClicked="#closeFromBackdrop" onKeyPressed="#handleKeyPressed"
            styleClass="pokemon-modal-overlay"
            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="net.paramada.pokemada.PokemonDetailController">
+           fx:controller="net.paramada.pokemada.controller.PokemonDetailController">
     <VBox maxHeight="690" maxWidth="850" onMouseClicked="#consumeCardClick" styleClass="pokemon-modal-card">
         <HBox alignment="CENTER_LEFT" styleClass="pokemon-modal-header">
             <Label text="Información" styleClass="pokemon-modal-title" HBox.hgrow="ALWAYS"/>

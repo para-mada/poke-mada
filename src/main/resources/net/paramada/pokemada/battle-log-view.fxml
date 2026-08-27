@@ -11,7 +11,7 @@
            onMouseClicked="#closeFromBackdrop" onKeyPressed="#handleKeyPressed"
            styleClass="battle-log-modal-overlay"
            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="net.paramada.pokemada.BattleLogController">
+           fx:controller="net.paramada.pokemada.controller.BattleLogController">
     <VBox maxHeight="650" maxWidth="760" onMouseClicked="#consumeCardClick" styleClass="battle-log-modal-card">
         <HBox alignment="CENTER_LEFT" styleClass="battle-log-modal-header">
             <VBox spacing="3" HBox.hgrow="ALWAYS">

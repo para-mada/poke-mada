@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.StackPane?>
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           styleClass="ally-combat-panel" fx:controller="net.paramada.pokemada.AllyCombatPanelController">
+           styleClass="ally-combat-panel" fx:controller="net.paramada.pokemada.controller.AllyCombatPanelController">
     <fx:include fx:id="battlePanel" source="double-combat-panel.fxml"/>
 </StackPane>

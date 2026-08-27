@@ -148,6 +148,10 @@ Escritorio:
   recalcula checksum PK7 y bloque Party, firma MemeCrypto, verifica, crea backup y reemplaza atómicamente.
 - Por seguridad, el cliente exige cerrar LimoMada3DS antes de escribir el save; el ACK incluye el
   cambio aplicado y el nombre del backup.
+- La zona central de la mochila tiene altura fija; la lista vertical de objetos usa su propio scroll
+  y ya no expande la tarjeta/página cuando una bolsa contiene muchos objetos.
+- Se retiró Showdown del menú y del árbol de vistas: los combates se operarán exclusivamente mediante
+  el emulador. El FXML placeholder permanece como archivo inactivo por ahora.
 
 ## Validación realizada
 
@@ -175,6 +179,7 @@ Escritorio:
 - Suite Django tras dummy/naturalezas/mentas: 19 pruebas, 0 fallos; migraciones limpias.
 - Suite Java del árbol actual: 96 pruebas, 0 fallos. El editor cubre naturaleza, EV, mismatch de
   especie, backups y checksums; MemeCrypto coincide byte por byte con el vector oficial de PKHeX.
+- Tras limitar la lista de objetos: FXML válido y suite Java 97 pruebas, 0 fallos.
 
 ## Problemas sin resolver
 

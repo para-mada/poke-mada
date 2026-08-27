@@ -6,6 +6,6 @@ module net.paramada.pokemada {
     requires java.net.http;
     requires jdk.crypto.ec;
 
-    opens net.paramada.pokemada to javafx.fxml;
+    opens net.paramada.pokemada.controller to javafx.fxml;
     exports net.paramada.pokemada;
 }

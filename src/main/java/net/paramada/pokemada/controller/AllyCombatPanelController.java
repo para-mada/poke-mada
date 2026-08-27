@@ -1,4 +1,4 @@
-package net.paramada.pokemada;
+package net.paramada.pokemada.controller;
 
 import javafx.fxml.FXML;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;

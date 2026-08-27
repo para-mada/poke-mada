@@ -3,6 +3,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+.codex-build/
+.codex-lib/
+.codex-dumps/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
