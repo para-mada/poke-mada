@@ -36,6 +36,7 @@ import net.paramada.pokemada.game.save.SaveFileWatcher;
 import net.paramada.pokemada.game.official.shared.crypto.PokemonCrypto;
 import net.paramada.pokemada.game.official.sm.SmBattleTextReader;
 import net.paramada.pokemada.game.official.sm.SmMemoryMap;
+import net.paramada.pokemada.game.official.sm.SmPartyEditor;
 import net.paramada.pokemada.game.official.sm.SmPartyHealer;
 import net.paramada.pokemada.game.save.SmSaveEditor;
 import net.paramada.pokemada.protocol.citra.CitraUdpClient;
@@ -443,30 +444,55 @@ public final class MainController {
                 throw new CompletionException(new IllegalArgumentException(
                         "Capacidad no soportada: " + command.capability()));
             }
-            if (emulatorConnected || liveSessionReady) {
-                throw new CompletionException(new IllegalStateException(
-                        "Cierra LimoMada3DS antes de modificar el guardado"));
-            }
             int slot = target.slot();
             try {
+                int species = target.pokemon().species();
+                Object rawNature = command.payload().get("nature");
+                Object rawStat = command.payload().get("stat");
+                Object rawAmount = command.payload().get("amount");
+                if ("modify_nature.v1".equals(command.capability()) && !(rawNature instanceof Number))
+                    throw new IllegalArgumentException("Payload de naturaleza inválido");
+                if ("modify_pokemon_ev.v1".equals(command.capability())
+                        && (!(rawStat instanceof String) || !(rawAmount instanceof Number)))
+                    throw new IllegalArgumentException("Payload de EV inválido");
+
+                SmPartyEditor.Result ramResult = null;
+                String ramFailure = null;
+                if (emulatorConnected || liveSessionReady) try {
+                    SmPartyEditor ramEditor = new SmPartyEditor();
+                    if ("modify_nature.v1".equals(command.capability())) {
+                        Number nature = (Number) rawNature;
+                        ramResult = withLiveClient(client -> ramEditor.modifyNature(
+                                client, slot, species, nature.intValue()));
+                    } else {
+                        String stat = (String) rawStat;
+                        Number amount = (Number) rawAmount;
+                        ramResult = withLiveClient(client -> ramEditor.addEv(
+                                client, slot, species, stat, amount.intValue()));
+                    }
+                } catch (Exception failure) {
+                    ramFailure = failure.getMessage() == null
+                            ? failure.getClass().getSimpleName() : failure.getMessage();
+                }
+
                 SmSaveEditor editor = new SmSaveEditor();
                 SmSaveEditor.Result result;
                 if ("modify_nature.v1".equals(command.capability())) {
-                    Object rawNature = command.payload().get("nature");
-                    if (!(rawNature instanceof Number nature))
-                        throw new IllegalArgumentException("Payload de naturaleza inválido");
-                    result = editor.modifyNature(PokemonGameConfig.pokemonMoon().save().file(), slot,
-                            target.pokemon().dexNumber(), nature.intValue());
+                    Number nature = (Number) rawNature;
+                    result = editor.modifyNature(GAME_CONFIG.save().file(), slot,
+                            species, nature.intValue());
                 } else {
-                    Object rawStat = command.payload().get("stat");
-                    Object rawAmount = command.payload().get("amount");
-                    if (!(rawStat instanceof String stat) || !(rawAmount instanceof Number amount))
-                        throw new IllegalArgumentException("Payload de EV inválido");
-                    result = editor.addEv(PokemonGameConfig.pokemonMoon().save().file(), slot,
-                            target.pokemon().dexNumber(), stat, amount.intValue());
+                    String stat = (String) rawStat;
+                    Number amount = (Number) rawAmount;
+                    result = editor.addEv(GAME_CONFIG.save().file(), slot,
+                            species, stat, amount.intValue());
                 }
-                return result.field() + ": " + result.before() + " → " + result.after()
+                String saveDetail = "save " + result.before() + " → " + result.after()
                         + " (backup: " + result.backup().getFileName() + ")";
+                String ramDetail = ramResult != null
+                        ? "RAM " + ramResult.before() + " → " + ramResult.after()
+                        : ramFailure == null ? "RAM no disponible" : "RAM no aplicada: " + ramFailure;
+                return result.field() + ": " + ramDetail + "; " + saveDetail;
             } catch (Exception exception) {
                 throw new CompletionException(exception);
             }

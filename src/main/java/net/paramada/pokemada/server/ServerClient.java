@@ -264,10 +264,11 @@ public final class ServerClient {
         }).toList();
     }
 
-    public CompletableFuture<ActionOperation> useVirtualItem(String token, String code, int pokemonId,
-                                                              int quantity, UUID idempotencyKey) {
+    public CompletableFuture<ActionOperation> useVirtualItem(String token, String code, int partySlot,
+                                                              int species, int quantity, UUID idempotencyKey) {
         String body = "{\"quantity\":" + quantity
-                + (pokemonId > 0 ? ",\"target_pokemon_id\":" + pokemonId : "") + "}";
+                + (partySlot >= 0 ? ",\"target_party_slot\":" + partySlot
+                + ",\"target_species\":" + species : "") + "}";
         HttpRequest request = authenticated("api/virtual-inventory/" + code + "/use/", token)
                 .header("Content-Type", "application/json")
                 .header("Idempotency-Key", idempotencyKey.toString())

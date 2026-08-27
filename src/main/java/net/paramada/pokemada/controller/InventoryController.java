@@ -13,8 +13,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import net.paramada.pokemada.server.ServerClient;
 import net.paramada.pokemada.server.ServerSettings;
+import net.paramada.pokemada.game.PokemonGameConfig;
 import net.paramada.pokemada.game.assets.PokemonSpriteCache;
 import net.paramada.pokemada.game.assets.VirtualItemSpriteCache;
+import net.paramada.pokemada.game.save.SmSavePartyReader;
 
 import java.util.HashMap;
 import java.util.List;
@@ -79,12 +81,15 @@ public final class InventoryController {
         refreshButton.setDisable(true);
         status("Actualizando mochila…", false);
         ServerClient client = new ServerClient(settings.baseUrl());
-        client.trainer(settings.token()).thenCompose(trainer -> {
-            CompletableFuture<List<ServerClient.Pokemon>> team = trainer.id() == 0
-                    ? CompletableFuture.completedFuture(List.of())
-                    : client.team(settings.token(), trainer.id());
-            return team.thenCombine(client.virtualInventory(settings.token()), Result::new);
-        }).thenCombine(client.pendingVirtualItemCommands(settings.token()), FullResult::new)
+        CompletableFuture<List<SmSavePartyReader.PartyPokemon>> team = CompletableFuture.supplyAsync(() -> {
+            try {
+                return new SmSavePartyReader().read(PokemonGameConfig.pokemonMoon().save().file());
+            } catch (Exception failure) {
+                throw new CompletionException(failure);
+            }
+        });
+        team.thenCombine(client.virtualInventory(settings.token()), Result::new)
+                .thenCombine(client.pendingVirtualItemCommands(settings.token()), FullResult::new)
                 .whenComplete((result, failure) -> Platform.runLater(() -> {
                     loading = false;
                     refreshButton.setDisable(false);
@@ -102,17 +107,16 @@ public final class InventoryController {
                 }));
     }
 
-    private void renderTeam(List<ServerClient.Pokemon> team) {
+    private void renderTeam(List<SmSavePartyReader.PartyPokemon> team) {
         targets.clear();
         teamContainer.getChildren().clear();
         selectedTarget = null;
-        for (int slot = 0; slot < team.size(); slot++) {
-            ServerClient.Pokemon pokemon = team.get(slot);
-            CommandTarget target = new CommandTarget(slot, pokemon);
-            targets.put(pokemon.id(), target);
+        for (SmSavePartyReader.PartyPokemon pokemon : team) {
+            CommandTarget target = new CommandTarget(pokemon.slot(), pokemon);
+            targets.put(pokemon.slot(), target);
             HBox row = teamRow(target);
             teamContainer.getChildren().add(row);
-            if (slot == 0) selectTarget(target, row);
+            if (selectedTarget == null) selectTarget(target, row);
         }
     }
 
@@ -132,7 +136,7 @@ public final class InventoryController {
         HBox row = new HBox(8, sprite, copy);
         row.getStyleClass().add("inventory-team-row");
         row.setOnMouseClicked(ignored -> selectTarget(target, row));
-        sprites.load(target.pokemon().dexNumber()).thenAccept(image ->
+        sprites.load(target.pokemon().species()).thenAccept(image ->
                 Platform.runLater(() -> sprite.setImage(image.orElse(null))));
         return row;
     }
@@ -263,8 +267,9 @@ public final class InventoryController {
         ServerClient client = new ServerClient(settings.baseUrl());
         button.setDisable(true);
         status("Preparando " + item.name() + "…", false);
-        int pokemonId = selectedTarget == null ? 0 : selectedTarget.pokemon().id();
-        client.useVirtualItem(settings.token(), item.code(), pokemonId, 1, UUID.randomUUID())
+        int partySlot = selectedTarget == null ? -1 : selectedTarget.slot();
+        int species = selectedTarget == null ? 0 : selectedTarget.pokemon().species();
+        client.useVirtualItem(settings.token(), item.code(), partySlot, species, 1, UUID.randomUUID())
                 .thenCompose(operation -> executeCommands(client, settings.token(), operation.commands()))
                 .whenComplete((ignored, failure) -> Platform.runLater(() -> {
                     button.setDisable(false);
@@ -288,11 +293,11 @@ public final class InventoryController {
 
     private CompletableFuture<Void> executeCommand(ServerClient client, String token,
                                                    ServerClient.ClientCommand command) {
-        int pokemonId = command.payload().get("target_pokemon_id") instanceof Number number
-                ? number.intValue() : 0;
-        CommandTarget target = targets.get(pokemonId);
+        int partySlot = command.payload().get("target_party_slot") instanceof Number number
+                ? number.intValue() : -1;
+        CommandTarget target = targets.get(partySlot);
         if (target == null) return failAndAcknowledge(client, token, command,
-                "El Pokémon destino ya no está en el equipo sincronizado");
+                "El Pokémon destino ya no está en el save local");
         return commandExecutor.apply(command, target)
                 .thenCompose(detail -> client.acknowledgeVirtualItemCommand(
                         token, command.id(), true, detail).<Void>thenApply(ignored -> null))
@@ -339,8 +344,9 @@ public final class InventoryController {
         return result;
     }
 
-    public record CommandTarget(int slot, ServerClient.Pokemon pokemon) { }
+    public record CommandTarget(int slot, SmSavePartyReader.PartyPokemon pokemon) { }
 
-    private record Result(List<ServerClient.Pokemon> team, List<ServerClient.VirtualItemStack> items) { }
+    private record Result(List<SmSavePartyReader.PartyPokemon> team,
+                          List<ServerClient.VirtualItemStack> items) { }
     private record FullResult(Result inventory, List<ServerClient.ClientCommand> pending) { }
 }

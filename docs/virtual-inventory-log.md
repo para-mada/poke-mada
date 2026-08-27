@@ -1,6 +1,6 @@
 # Bitácora persistente — mochila virtual
 
-Última actualización: 2026-08-26 — mentas y edición segura de saves
+Última actualización: 2026-08-27 — equipo local y edición RAM/save
 
 ## Objetivo actual
 
@@ -143,11 +143,16 @@ Escritorio:
 - Nuevo efecto tipado `modify_nature`, con las 25 naturalezas Gen 7 y capacidad `modify_nature.v1`.
 - Catálogo idempotente de 21 mentas, sin condición ni límite por tramo, con nombres/descripciones en
   español y los sprites de `Downloads/mints` incluidos como assets desplegables del servidor.
-- `modify_pokemon_stat` ahora emite `modify_pokemon_ev.v1`; suplementos y mentas editan el archivo
-  `main`, no RAM. El editor valida tamaño, slot, especie y checksum PK7; respeta 252 por stat/510 total,
-  recalcula checksum PK7 y bloque Party, firma MemeCrypto, verifica, crea backup y reemplaza atómicamente.
-- Por seguridad, el cliente exige cerrar LimoMada3DS antes de escribir el save; el ACK incluye el
-  cambio aplicado y el nombre del backup.
+- `modify_pokemon_stat` ahora emite `modify_pokemon_ev.v1`; suplementos y mentas intentan editar en
+  vivo el PK7 cifrado del equipo cuando LimoMada3DS está conectado y escriben siempre el archivo
+  `main`. Ambos editores validan slot, especie y checksum PK7 y respetan 252 por stat/510 total;
+  la ruta RAM escribe y relee para verificar, mientras la ruta save recalcula checksum PK7 y bloque
+  Party, firma MemeCrypto, verifica, crea backup y reemplaza atómicamente.
+- Si RAM no está disponible o rechaza la escritura, la operación continúa por save. El ACK distingue
+  el resultado RAM del cambio persistido e incluye el nombre del backup.
+- El selector Pokémon de la mochila se descifra directamente del `main` local; ya no consulta el
+  equipo sincronizado de la API. El cliente envía únicamente slot y especie, y el servidor conserva
+  esa referencia local en el snapshot/command sin exigir un `TrainerPokemon` del servidor.
 - La zona central de la mochila tiene altura fija; la lista vertical de objetos usa su propio scroll
   y ya no expande la tarjeta/página cuando una bolsa contiene muchos objetos.
 - Se retiró Showdown del menú y del árbol de vistas: los combates se operarán exclusivamente mediante
@@ -177,8 +182,10 @@ Escritorio:
 - Tras añadir bolsas: suite Django 14/14 y suite Java 100/100; `makemigrations --check` limpio.
 - Tras añadir caché de sprites: suite Java 103 pruebas, 0 fallos.
 - Suite Django tras dummy/naturalezas/mentas: 19 pruebas, 0 fallos; migraciones limpias.
-- Suite Java del árbol actual: 96 pruebas, 0 fallos. El editor cubre naturaleza, EV, mismatch de
-  especie, backups y checksums; MemeCrypto coincide byte por byte con el vector oficial de PKHeX.
+- Suite Java del árbol actual: 103 pruebas, 0 fallos. Los editores RAM/save cubren naturaleza, EV,
+  mismatch de especie, límites, escritura verificada, backups y checksums; MemeCrypto coincide byte
+  por byte con el vector oficial de PKHeX.
+- Suite Django tras aceptar objetivos del save local: 21 pruebas, 0 fallos.
 - Tras limitar la lista de objetos: FXML válido y suite Java 97 pruebas, 0 fallos.
 
 ## Problemas sin resolver
