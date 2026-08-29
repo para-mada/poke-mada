@@ -26,6 +26,11 @@ final class SmMemeCrypto {
 
     private SmMemeCrypto() { }
 
+    static void clearSignature(byte[] save) {
+        if (save.length != 0x6BE00) throw new IllegalArgumentException("El save no es de Pokémon Sol/Luna");
+        Arrays.fill(save, SIGNATURE_BLOCK, SIGNATURE_BLOCK + SIGNATURE_SIZE, (byte) 0);
+    }
+
     static void sign(byte[] save) {
         if (save.length != 0x6BE00) throw new IllegalArgumentException("El save no es de Pokémon Sol/Luna");
         byte[] signature = new byte[SIGNATURE_SIZE];
