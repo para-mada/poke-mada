@@ -74,6 +74,10 @@
                                   toggleGroup="$navigationGroup" styleClass="nav-item">
                         <graphic><Label text="▱" styleClass="nav-icon"/></graphic>
                     </ToggleButton>
+                    <ToggleButton mnemonicParsing="false" onAction="#selectSection" text="PERFIL" userData="profile"
+                                  toggleGroup="$navigationGroup" styleClass="nav-item">
+                        <graphic><Label text="●" styleClass="nav-icon"/></graphic>
+                    </ToggleButton>
                 </VBox>
 
                 <Region VBox.vgrow="ALWAYS"/>
@@ -297,6 +301,7 @@
             <fx:include fx:id="inventoryView" source="inventory-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="mailboxView" source="mailbox-view.fxml" managed="false" visible="false"/>
             <fx:include fx:id="boosterPacksView" source="booster-packs-view.fxml" managed="false" visible="false"/>
+            <fx:include fx:id="profileView" source="profile-view.fxml" managed="false" visible="false"/>
 
             <fx:include fx:id="combatDetailView" source="single-combat-panel.fxml" managed="false" visible="false"/>
             <fx:include fx:id="doubleCombatDetailView" source="double-combat-panel.fxml" managed="false" visible="false"/>

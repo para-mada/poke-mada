@@ -7,6 +7,61 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ServerClientTest {
     @Test
+    void readsPendingAndConsumedCommunityState() {
+        var pending = ServerClient.communityProfileFromBody("""
+                {"current_segment":3,"community_pokemon":null,"community_skip":true}
+                """);
+        assertEquals(3, pending.segment());
+        org.junit.jupiter.api.Assertions.assertNull(pending.pokemon());
+        assertEquals(Boolean.TRUE, pending.skipAvailable());
+        var consumed = ServerClient.communityProfileFromBody("""
+                {"current_segment":3,"community_pokemon":25,"community_skip":false}
+                """);
+        assertEquals(25, consumed.pokemon());
+        assertEquals(Boolean.FALSE, consumed.skipAvailable());
+        org.junit.jupiter.api.Assertions.assertNull(
+                ServerClient.communityProfileFromBody("{\"current_segment\":3}").skipAvailable());
+    }
+
+    @Test
+    void coachCanSelectPokemonButCannotUseSkipAndMissingPermissionsStayUnavailable() {
+        var coach = ServerClient.communityPermissionsFromBody("""
+                {"role":"coach","capabilities":{"community_pokemon.select":true,"community_skip.use":false,"death_count.manage":true}}
+                """);
+        assertTrue(coach.selectPokemon());
+        assertTrue(coach.manageDeaths());
+        org.junit.jupiter.api.Assertions.assertFalse(coach.useSkip());
+        assertEquals(new ServerClient.CommunityPermissions(false, false, false),
+                ServerClient.communityPermissionsFromBody("{}"));
+    }
+
+    @Test
+    void readsDeathCountFromLegacyEditableProfile() {
+        var profile = ServerClient.communityProfileFromBody("""
+                {"current_segment":3,"death_count":7}
+                """);
+        assertEquals(7, profile.deathCount());
+        assertEquals(0, ServerClient.communityProfileFromBody("{\"death_count\":0}").deathCount());
+        org.junit.jupiter.api.Assertions.assertNull(
+                ServerClient.communityProfileFromBody("{}").deathCount());
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> new ServerClient("http://127.0.0.1:1/").updateDeathCount("test-token", -1));
+    }
+
+    @Test
+    void rejectsInvalidCommunityCommandsBeforeSending() {
+        var client = new ServerClient("http://127.0.0.1:1/");
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> client.declareCommunityPokemon("test-token", 0));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> client.declareCommunityPokemon("test-token", 822));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> client.useCommunitySkip("test-token", "  "));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> client.useCommunitySkip("test-token", "a".repeat(256)));
+    }
+
+    @Test
     void acceptsEmptyTrainerForAuthenticatedAccountWithoutTrainer() {
         ServerClient.Trainer trainer = ServerClient.trainerFromBody("");
 

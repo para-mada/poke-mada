@@ -1250,3 +1250,95 @@
 .inventory-team-row.selected { -fx-background-color: #eae2f8; -fx-border-color: #7138e6; -fx-border-width: 2; }
 .inventory-team-name { -fx-text-fill: #38303e; -fx-font-size: 11px; -fx-font-weight: bold; }
 .inventory-team-meta { -fx-text-fill: #82798a; -fx-font-size: 9px; }
+
+/* Profile and current community segment controls. */
+.profile-hero {
+    -fx-background-color: linear-gradient(to right, #251c48, #5933a1);
+    -fx-background-radius: 18;
+    -fx-padding: 24;
+}
+.profile-eyebrow { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #7138e6; }
+.profile-hero .profile-eyebrow { -fx-text-fill: #d0baff; }
+.profile-title { -fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white; }
+.profile-segment { -fx-font-size: 14px; -fx-text-fill: #e2d9f6; }
+.profile-section-title { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #29213c; }
+.profile-control-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: #e5dff0;
+    -fx-border-radius: 16;
+    -fx-padding: 24;
+}
+.profile-sprite-stage { -fx-background-color: #f1edf8; -fx-background-radius: 20; }
+.profile-skip-icon { -fx-font-size: 40px; -fx-text-fill: #7138e6; }
+.profile-page .text-field, .profile-page .combo-box {
+    -fx-pref-height: 40;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+.profile-action-button, .profile-refresh-button {
+    -fx-min-height: 40;
+    -fx-padding: 10 18;
+    -fx-background-radius: 8;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+.profile-action-button { -fx-background-color: #7138e6; }
+.profile-action-button:hover { -fx-background-color: #5b2fc4; }
+.profile-refresh-button { -fx-background-color: rgba(255,255,255,0.18); }
+.profile-refresh-button:hover { -fx-background-color: rgba(255,255,255,0.28); }
+.profile-action-button:disabled { -fx-opacity: 0.45; }
+
+/* Community picker: searchable sprite table inspired by the original app modal. */
+.community-selector-overlay { -fx-background-color: rgba(17, 15, 31, 0.65); }
+.community-selector-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 28, 0.15, 0, 10);
+}
+.community-selector-header {
+    -fx-background-color: linear-gradient(to right, #5933a1, #7138e6);
+    -fx-background-radius: 20 20 0 0;
+    -fx-padding: 22 24;
+}
+.community-selector-title { -fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: white; }
+.community-selector-subtitle { -fx-font-size: 13px; -fx-text-fill: #e4d9fa; }
+.community-selector-close {
+    -fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 28px;
+    -fx-cursor: hand; -fx-padding: 0 8;
+}
+.community-selector-close:hover { -fx-background-color: rgba(255,255,255,0.15); -fx-background-radius: 8; }
+.community-selector-body { -fx-padding: 20 24 0 24; }
+.community-selector-body .text-field {
+    -fx-pref-height: 42; -fx-font-size: 14px; -fx-background-color: #f7f5fb;
+    -fx-border-color: #d8cfe9; -fx-border-radius: 8; -fx-background-radius: 8;
+}
+.community-selector-body .text-field:focused { -fx-border-color: #7138e6; }
+.community-species-table { -fx-background-color: white; -fx-border-color: #e7e1ee; -fx-padding: 0; }
+.community-species-table .column-header-background,
+.community-species-table .column-header, .community-species-table .filler { -fx-background-color: #f3eff9; }
+.community-species-table .column-header { -fx-pref-height: 36; -fx-border-width: 0; }
+.community-species-table .column-header .label {
+    -fx-alignment: CENTER_LEFT; -fx-text-fill: #645477; -fx-padding: 0 12; -fx-font-size: 12px;
+}
+.community-species-table .table-row-cell { -fx-background-color: white; -fx-cursor: hand; }
+.community-species-table .table-row-cell:odd { -fx-background-color: #faf9fc; }
+.community-species-table .table-row-cell:filled:hover { -fx-background-color: #f1eafa; }
+.community-species-table .table-row-cell:filled:selected { -fx-background-color: #e3d5fa; }
+.community-species-table .table-cell {
+    -fx-alignment: CENTER_LEFT; -fx-text-fill: #302340; -fx-font-size: 15px;
+    -fx-padding: 4 12; -fx-border-color: transparent transparent #eee9f5 transparent;
+}
+.community-species-table .table-row-cell:empty { -fx-background-color: white; -fx-cursor: default; }
+.community-species-table .table-row-cell:empty .table-cell { -fx-border-color: transparent; }
+.community-selector-footer { -fx-padding: 16 24 22 24; }
+.community-selection-label { -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #5933a1; }
+.community-selector-cancel {
+    -fx-min-height: 40; -fx-background-color: #f0edf5; -fx-background-radius: 8;
+    -fx-text-fill: #645477; -fx-font-weight: bold; -fx-padding: 10 18; -fx-cursor: hand;
+}
+.community-selector-cancel:hover { -fx-background-color: #e5ddef; }
+.community-selector-card .profile-action-button:focused,
+.community-selector-cancel:focused, .community-selector-close:focused { -fx-border-color: #b89bea; -fx-border-radius: 8; }

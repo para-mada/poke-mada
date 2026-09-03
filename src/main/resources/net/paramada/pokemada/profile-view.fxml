@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<StackPane fx:id="profileRoot"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="net.paramada.pokemada.controller.ProfileController">
+    <ScrollPane fx:id="profileContent" fitToWidth="true" hbarPolicy="NEVER" styleClass="content-scroll">
+    <content>
+        <VBox spacing="22" styleClass="content, profile-page">
+            <padding><Insets top="32" right="36" bottom="40" left="36"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="18" styleClass="profile-hero">
+                <ImageView fx:id="portrait" fitWidth="76" fitHeight="76" preserveRatio="true">
+                    <image><Image url="@assets/profile.png"/></image>
+                </ImageView>
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="MI PERFIL" styleClass="profile-eyebrow"/>
+                    <Label fx:id="trainerName" text="Entrenador" wrapText="true" styleClass="profile-title"/>
+                    <Label fx:id="segmentLabel" text="Tramo —" styleClass="profile-segment"/>
+                </VBox>
+                <Button fx:id="refreshButton" text="ACTUALIZAR" onAction="#refresh" styleClass="profile-refresh-button"/>
+            </HBox>
+            <VBox spacing="5">
+                <Label text="Contador de muertes y controles de comunidad." wrapText="true" styleClass="body-muted"/>
+            </VBox>
+            <VBox spacing="14" styleClass="profile-control-card">
+                <Label text="CONTEO DE MUERTES" styleClass="profile-eyebrow"/>
+                <Label text="Muertes del tramo actual" styleClass="profile-section-title"/>
+                <Label text="Ajusta las muertes de este tramo y guarda para actualizar el overlay." wrapText="true" styleClass="body-muted"/>
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Button fx:id="decreaseDeathsButton" text="−" accessibleText="Restar una muerte"
+                            onAction="#decreaseDeaths" styleClass="profile-action-button"/>
+                    <TextField fx:id="deathCountField" prefWidth="110" maxWidth="150" alignment="CENTER"
+                               promptText="—" accessibleText="Número de muertes" onAction="#saveDeaths"/>
+                    <Button fx:id="increaseDeathsButton" text="+" accessibleText="Sumar una muerte"
+                            onAction="#increaseDeaths" styleClass="profile-action-button"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="saveDeathsButton" text="GUARDAR" onAction="#saveDeaths" styleClass="profile-action-button"/>
+                </HBox>
+                <Label fx:id="deathCountState" text="Sin consultar" wrapText="true" styleClass="body-muted"/>
+            </VBox>
+            <VBox spacing="18" styleClass="profile-control-card">
+                <HBox alignment="CENTER_LEFT" spacing="18">
+                    <StackPane minWidth="108" minHeight="108" styleClass="profile-sprite-stage">
+                        <ImageView fx:id="pokemonSprite" fitWidth="96" fitHeight="96" preserveRatio="true" smooth="false"/>
+                    </StackPane>
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="POKÉMON DE COMUNIDAD" styleClass="profile-eyebrow"/>
+                        <Label fx:id="pokemonState" text="Sin consultar" wrapText="true" styleClass="profile-section-title"/>
+                        <Label text="Una elección por tramo. Una vez fijada, no se puede cambiar desde aquí."
+                               wrapText="true" styleClass="body-muted"/>
+                    </VBox>
+                </HBox>
+                <Button fx:id="chooseButton" text="SELECCIONAR POKÉMON" onAction="#openPokemonSelector"
+                        styleClass="profile-action-button"/>
+            </VBox>
+            <VBox spacing="16" styleClass="profile-control-card">
+                <HBox alignment="CENTER_LEFT" spacing="16">
+                    <Label text="↪" styleClass="profile-skip-icon"/>
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="SKIP DE COMUNIDAD" styleClass="profile-eyebrow"/>
+                        <Label fx:id="skipState" text="Sin consultar" styleClass="profile-section-title"/>
+                    </VBox>
+                </HBox>
+                <Label text="Indica la ruta donde quieres usarlo. Al confirmar, se consumirá el skip de este tramo."
+                       wrapText="true" styleClass="body-muted"/>
+                <Label text="Ruta o zona (máximo 255 caracteres)" styleClass="body-text"/>
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <TextField fx:id="routeField" promptText="Ej. Ruta 2" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="skipButton" text="USAR SKIP" onAction="#useSkip" styleClass="profile-action-button"/>
+                </HBox>
+            </VBox>
+            <Label fx:id="statusLabel" wrapText="true" styleClass="body-muted"/>
+        </VBox>
+    </content>
+    </ScrollPane>
+    <StackPane fx:id="pokemonSelector" managed="false" visible="false" styleClass="community-selector-overlay">
+        <VBox fx:id="selectorCard" maxWidth="760" prefHeight="660" minHeight="0" styleClass="community-selector-card">
+            <HBox alignment="CENTER_LEFT" spacing="12" styleClass="community-selector-header">
+                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                    <Label text="POKÉMON DE LA COMUNIDAD" styleClass="community-selector-title" wrapText="true"/>
+                    <Label text="Solo etapas base: Pokémon bebé y especies sin preevolución." styleClass="community-selector-subtitle" wrapText="true"/>
+                </VBox>
+                <Button text="×" onAction="#closePokemonSelector" accessibleText="Cerrar selector" styleClass="community-selector-close"/>
+            </HBox>
+            <VBox spacing="12" minHeight="0" VBox.vgrow="ALWAYS" styleClass="community-selector-body">
+                <TextField fx:id="searchField" promptText="Buscar Pokémon por nombre o número…" accessibleText="Buscar Pokémon"/>
+                <Label fx:id="resultsLabel" text="" styleClass="body-muted"/>
+                <TableView fx:id="speciesTable" fixedCellSize="58" minHeight="90" prefHeight="400" VBox.vgrow="ALWAYS"
+                           styleClass="community-species-table" accessibleText="Pokémon disponibles">
+                    <columns>
+                        <TableColumn fx:id="spriteColumn" text="" prefWidth="80" minWidth="80" maxWidth="80" sortable="false" reorderable="false"/>
+                        <TableColumn fx:id="numberColumn" text="# Pokédex" prefWidth="110" minWidth="110" maxWidth="110" sortable="false" reorderable="false"/>
+                        <TableColumn fx:id="nameColumn" text="Nombre" prefWidth="470" sortable="false" reorderable="false"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            <VBox spacing="12" styleClass="community-selector-footer">
+                <Label fx:id="selectionLabel" text="Selecciona un Pokémon de la lista" styleClass="community-selection-label"/>
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+                    <Button text="CANCELAR" onAction="#closePokemonSelector" styleClass="community-selector-cancel"/>
+                    <Button fx:id="registerButton" text="REGISTRAR POKÉMON" onAction="#choosePokemon" disable="true"
+                            styleClass="profile-action-button"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+    </StackPane>
+</StackPane>

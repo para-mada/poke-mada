@@ -110,6 +110,8 @@ public final class MainController {
     @FXML private MailboxController mailboxViewController;
     @FXML private ScrollPane boosterPacksView;
     @FXML private BoosterPacksController boosterPacksViewController;
+    @FXML private StackPane profileView;
+    @FXML private ProfileController profileViewController;
     @FXML private HBox emulatorConnectionRow;
     @FXML private Label emulatorConnectionStatus;
     @FXML private ImageView emulatorConnectionIcon;
@@ -312,9 +314,15 @@ public final class MainController {
         renderBattleLogPanel();
         clearNotifications();
         mailboxViewController.setSessionListener(this::setAuthenticated);
-        mailboxViewController.setTrainerListener(profileTrainerName::setText);
+        mailboxViewController.setTrainerListener(name -> {
+            profileTrainerName.setText(name);
+            profileViewController.setIdentity(name, profilePicture.getImage());
+        });
         mailboxViewController.setProfileImageListener(
-                image -> profilePicture.setImage(image == null ? defaultProfilePicture : image));
+                image -> {
+                    profilePicture.setImage(image == null ? defaultProfilePicture : image);
+                    profileViewController.setIdentity(profileTrainerName.getText(), profilePicture.getImage());
+                });
         inventoryViewController.configure(this::executeInventoryCommand);
         boosterPacksViewController.configure(mailboxViewController::refresh);
         saveFileWatcher.start();
@@ -393,8 +401,11 @@ public final class MainController {
         boolean showInventory = "inventory".equals(section);
         boolean showMailbox = "mailbox".equals(section);
         boolean showBoosterPacks = "booster-packs".equals(section);
+        boolean showProfile = "profile".equals(section);
         boolean showHome = !(showLive || showBoxes || showWildcards || showInventory
-                || showMailbox || showBoosterPacks);
+                || showMailbox || showBoosterPacks || showProfile);
+        profileView.setManaged(showProfile);
+        profileView.setVisible(showProfile);
         homeView.setManaged(showHome);
         homeView.setVisible(showHome);
         boxesView.setManaged(showBoxes);
@@ -434,6 +445,7 @@ public final class MainController {
         if (showBoosterPacks) {
             boosterPacksViewController.refresh();
         }
+        if (showProfile) profileViewController.refresh();
     }
 
     private CompletableFuture<String> executeInventoryCommand(ServerClient.ClientCommand command,
@@ -937,6 +949,9 @@ public final class MainController {
         sidebar.setManaged(authenticated);
         sidebar.setVisible(authenticated);
         if (!authenticated) {
+            profileViewController.reset();
+            profileView.setManaged(false);
+            profileView.setVisible(false);
             stopNotifications();
             clearNotifications();
             homeView.setManaged(false);
@@ -971,6 +986,7 @@ public final class MainController {
 
     public void refreshProfile() {
         if (authenticated) mailboxViewController.refreshProfile();
+        if (authenticated && profileView.isVisible()) profileViewController.refresh();
     }
 
     @FXML

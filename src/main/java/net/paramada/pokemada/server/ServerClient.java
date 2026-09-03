@@ -91,6 +91,57 @@ public final class ServerClient {
         });
     }
 
+    public CompletableFuture<CommunityProfile> communityProfile(String token) {
+        return get("api/trainers/get_editable_profile/", token).thenApply(ServerClient::communityProfileFromBody);
+    }
+
+    static CommunityProfile communityProfileFromBody(String body) {
+        Map<String, Object> json = object(Json.parse(body));
+        return new CommunityProfile(integer(json.get("current_segment")),
+                json.get("community_pokemon") == null ? null : integer(json.get("community_pokemon")),
+                json.get("community_skip") instanceof Boolean available ? available : null,
+                json.get("death_count") instanceof Number count ? count.intValue() : null);
+    }
+
+    public CompletableFuture<CommunityPermissions> communityPermissions(String token) {
+        return get("api/actor-context/", token).thenApply(ServerClient::communityPermissionsFromBody);
+    }
+
+    static CommunityPermissions communityPermissionsFromBody(String body) {
+        Map<String, Object> json = object(Json.parse(body));
+        Map<String, Object> capabilities = json.get("capabilities") instanceof Map<?, ?>
+                ? object(json.get("capabilities")) : Map.of();
+        return new CommunityPermissions(Boolean.TRUE.equals(capabilities.get("community_pokemon.select")),
+                Boolean.TRUE.equals(capabilities.get("community_skip.use")),
+                Boolean.TRUE.equals(capabilities.get("death_count.manage")));
+    }
+
+    public CompletableFuture<Void> declareCommunityPokemon(String token, int dexNumber) {
+        if (dexNumber < 1 || dexNumber > 821) throw new IllegalArgumentException("invalid species");
+        return communityCommand(token, "declare_community_pokemon", "dex_number=" + dexNumber);
+    }
+
+    public CompletableFuture<Void> useCommunitySkip(String token, String route) {
+        if (route == null || route.isBlank() || route.trim().length() > 255) {
+            throw new IllegalArgumentException("invalid route");
+        }
+        return communityCommand(token, "use_community_skip", "route=" + encode(route.trim()));
+    }
+
+    private CompletableFuture<Void> communityCommand(String token, String action, String form) {
+        return send(authenticated("api/trainers/" + action + "/", token)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(form)).build()).thenApply(ignored -> null);
+    }
+
+    public CompletableFuture<Void> updateDeathCount(String token, int deaths) {
+        if (deaths < 0) throw new IllegalArgumentException("invalid death count");
+        return communityCommand(token, "register_deaths", "deaths=" + deaths);
+    }
+
+    public record CommunityProfile(int segment, Integer pokemon, Boolean skipAvailable, Integer deathCount) { }
+    public record CommunityPermissions(boolean selectPokemon, boolean useSkip, boolean manageDeaths) { }
+
     public CompletableFuture<byte[]> image(String url, String token) {
         HttpRequest request = authenticated(url, token).GET().build();
         return http.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply(response -> {
